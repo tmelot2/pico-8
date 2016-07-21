@@ -1,0 +1,15 @@
+Snake Ideas
+	Countdown before start
+	Spawn food inside edges of map
+	Don't spawn food on top of each other
+	Don't spawn food on player
+	Food spoils
+	Levels
+	Different sized food
+
+
+Polish ideas
+	Snake trail colors do things when eating shit
+	Width can grow?
+	Damage numbers
+	Different food
