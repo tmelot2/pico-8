@@ -6,7 +6,15 @@ Snake Ideas
 	Food spoils
 	Levels
 	Different sized food
-
+	Snake Dash
+		Speed boost (fast ramp up, ease out)
+		Can go thru self
+		Solves problem of slow early game and opens up movement mid-late game
+		Hold and release instead of immediate fire?
+			If snake trail colors change over time, hold could bullet time, evident from snake
+			colors slowing down
+			Hold and release could show end position ghost
+		If works, "Snake Dash" good name for game?
 
 Polish ideas
 	Snake trail colors do things when eating shit
