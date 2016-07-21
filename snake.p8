@@ -16,8 +16,8 @@ player.width = 7
 player.height = 7
 player.h = {}
 player.l = 4
-player.c = 8 
--- ”=1 ‹=2 ƒ=3 ‘=4
+player.c = 8
+-- u=1 l=2 d=3 r=4
 player.dir = 1
 
 food={}
@@ -26,34 +26,34 @@ timer = 0
 score=0
 
 function _init()
-	if (skiptitle==1) then scene = 1 end
-	
-	if scene==0 then
-		titleinit()
-	elseif scene==1 then
-		gameinit()
-	end
+  if (skiptitle==1) then scene = 1 end
+
+  if scene==0 then
+    titleinit()
+  elseif scene==1 then
+    gameinit()
+  end
 end
 
 -- game loop
 function _update()
-	if scene==0 then
-		titleupdate()
-	elseif scene==1 then
-		gameupdate()
+  if scene==0 then
+    titleupdate()
+  elseif scene==1 then
+    gameupdate()
  elseif scene==2 then
   gameoverupdate()
-	end
+  end
 end
 
 function _draw()
-	if scene==0 then
-		titledraw()
-	elseif scene==1 then
-		gamedraw()
-	elseif scene==2 then
-	 gameoverdraw()
-	end
+  if scene==0 then
+    titledraw()
+  elseif scene==1 then
+    gamedraw()
+  elseif scene==2 then
+   gameoverdraw()
+  end
 end
 
 -- init functions
@@ -67,17 +67,17 @@ function gameinit()
  player.width = 7
  player.height = 7
  player.dir = flr(rnd(4))+1
- player.c = 8 
+ player.c = 8
  player.h = {}
  player.l = 20
  scene = 1
-	timer = 0
+  timer = 0
  score = 0
 
  -- food
  food = {}
- spawnfood(10) 
- 
+ spawnfood(10)
+
  music(1)
 end
 
@@ -87,13 +87,13 @@ function gameover()
 end
 
 function gameoverinit()
-	scene = 2
-	timer = 0
+  scene = 2
+  timer = 0
  music(-1)
  rectfill(0,0,screenwidth,screenheight,8)
-	 local text = 'u died bitch'
+   local text = 'u died bitch'
  print(text,hcenter(text),vcenter(text)-20,7)
- 
+
  local text = 'press z to try'
  print(text,hcenter(text),vcenter(text),7)
  local text = 'that shit again'
@@ -102,31 +102,31 @@ end
 
 -- update functions
 function titleupdate()
-	if btnp(4) then
-		gameinit()
-	end
+  if btnp(4) then
+    gameinit()
+  end
 end
 
 function gameupdate()
  -- input
-	playercontrol()
-	
-	-- move player
+  playercontrol()
+
+  -- move player
  if (timer%1==0) then
-	 if (player.dir == 1) then player.y-=1
+   if (player.dir == 1) then player.y-=1
   elseif (player.dir == 2) then player.x-=1
   elseif (player.dir == 3) then player.y+=1
-  elseif (player.dir == 4) then player.x+=1 
+  elseif (player.dir == 4) then player.x+=1
   end
-	end
-	
-	// collisions
-	-- screen edge
+  end
+
+  // collisions
+  -- screen edge
  if (player.x <= 0 or player.x >= screenwidth or player.y < 12 or player.y >= screenheight) then
   gameover()
   return
  end
- 
+
  -- self
  for v in all(player.h) do
   if (player.x == v.x and player.y == v.y) then
@@ -142,11 +142,11 @@ function gameupdate()
   local foodobj={x=f.x,y=f.y,w=8,h=8}
   -- got food!
   if iscolliding(playerobj,foodobj) then
-  	sfx(2)
-  	del(food,f)
-  	score+=1000
-  	player.l += 20
-  	spawnfood(1)
+    sfx(2)
+    del(food,f)
+    score+=1000
+    player.l += 20
+    spawnfood(1)
   end
  end
 
@@ -157,50 +157,50 @@ function gameupdate()
  if (#player.h >= player.l) then
   del(player.h,player.h[1])
  end
- 
-	-- timer
-	timer+=1
-	-- score
-	score+=1
+
+  -- timer
+  timer+=1
+  -- score
+  score+=1
 
  if (score%12==0) then
- 	-- player.l += 5
+  -- player.l += 5
  end
 end
 
 function gameoverupdate()
  if btnp(4) then
-		gameinit()
-	end
-	timer += 1
+    gameinit()
+  end
+  timer += 1
 end
 
 -- draw functions
 function titledraw()
-	local titletxt = "t3h snake!!1"
-	local starttxt = "presssss z to ssssstart"
-	rectfill(0,0,screenwidth, screenheight, 3)
-	print(titletxt, hcenter(titletxt), screenheight/4, 10)
-	print(starttxt, hcenter(starttxt), (screenheight/4)+(screenheight/2),7)			
+  local titletxt = "t3h snake!!1"
+  local starttxt = "presssss z to ssssstart"
+  rectfill(0,0,screenwidth, screenheight, 3)
+  print(titletxt, hcenter(titletxt), screenheight/4, 10)
+  print(starttxt, hcenter(starttxt), (screenheight/4)+(screenheight/2),7)
 end
 
 function gamedraw()
  // bg
-	rectfill(0,0,screenwidth, screenheight, 12)
+  rectfill(0,0,screenwidth, screenheight, 12)
  // hud
-	rectfill(0,0,screenwidth, 10, 0)
-	// border
-	rect(0,0,screenwidth,screenheight,7)
+  rectfill(0,0,screenwidth, 10, 0)
+  // border
+  rect(0,0,screenwidth,screenheight,7)
  rect(0,0,screenwidth,11,7)
-	// text
-	print("score: " .. score, 4, 4, 7)
+  // text
+  print("score: " .. score, 4, 4, 7)
 
-	playerdraw()
+  playerdraw()
 
-	-- food
-	for f in all(food) do
-	 spr(0,f.x,f.y)
-	end
+  -- food
+  for f in all(food) do
+   spr(0,f.x,f.y)
+  end
 end
 
 function gameoverdraw()
@@ -218,68 +218,68 @@ end
 
 -- handle button inputs
 function playercontrol()
- -- ‹
-	if (btn(0) and player.dir!=4) then player.dir=2 end
- -- ‘
-	if (btn(1) and player.dir!=2) then player.dir=4 end
-	-- ”
-	if (btn(2) and player.dir!=3) then player.dir=1 end
-	-- ƒ
-	if (btn(3) and player.dir!=1) then player.dir=3 end
+ -- l?
+  if (btn(0) and player.dir!=4) then player.dir=2 end
+ -- r?
+  if (btn(1) and player.dir!=2) then player.dir=4 end
+  -- u?
+  if (btn(2) and player.dir!=3) then player.dir=1 end
+  -- d?
+  if (btn(3) and player.dir!=1) then player.dir=3 end
 end
 
 -- draw player sprite
 function playerdraw()
-	-- current pos
+  -- current pos
  pset(player.x,player.y,11)
-	-- spr(0, player.x, player.y)
-	-- tail
-	for v in all(player.h) do
-	 if (v.x!=player.x or v.y!=player.y) then
- 	 pset(v.x,v.y,3)
- 	end
-	end
+  -- spr(0, player.x, player.y)
+  -- tail
+  for v in all(player.h) do
+   if (v.x!=player.x or v.y!=player.y) then
+   pset(v.x,v.y,3)
+  end
+  end
 end
 
 function spawnfood(c)
  local padding=10
- for i=1,c do  
- 	add(food,{x=rnd(screenwidth-padding)+padding,y=rnd(screenheight-padding)+padding})
+ for i=1,c do
+  add(food,{x=rnd(screenwidth-padding)+padding,y=rnd(screenheight-padding)+padding})
  end
 end
 
 -- library functions
 --- center align from: pico-8.wikia.com/wiki/centering_text
 function hcenter(s)
-	-- string length time			s the 
-	-- pixels in a char's width
-	-- cut in half and rounded down
-	return (screenwidth / 2)-flr((#s*4)/2)
+  -- string length time     s the
+  -- pixels in a char's width
+  -- cut in half and rounded down
+  return (screenwidth / 2)-flr((#s*4)/2)
 end
 
 function vcenter(s)
-	-- string char's height
-	-- cut in half and rounded down
-	return (screenheight /2)-flr(5/2)
+  -- string char's height
+  -- cut in half and rounded down
+  return (screenheight /2)-flr(5/2)
 end
 
 --- collision check
 function iscolliding(obj1, obj2)
-	local x1 = obj1.x
-	local y1 = obj1.y
-	local w1 = obj1.w
-	local h1 = obj1.h
-	
-	local x2 = obj2.x
-	local y2 = obj2.y
-	local w2 = obj2.w
-	local h2 = obj2.h
+  local x1 = obj1.x
+  local y1 = obj1.y
+  local w1 = obj1.w
+  local h1 = obj1.h
 
-	if(x1 < (x2 + w2)  and (x1 + w1)  > x2 and y1 < (y2 + h2) and (y1 + h1) > y2) then
-		return true
-	else
-		return false
-	end
+  local x2 = obj2.x
+  local y2 = obj2.y
+  local w2 = obj2.w
+  local h2 = obj2.h
+
+  if(x1 < (x2 + w2)  and (x1 + w1)  > x2 and y1 < (y2 + h2) and (y1 + h1) > y2) then
+    return true
+  else
+    return false
+  end
 end
 
 __gfx__
