@@ -14,11 +14,15 @@ player.x = screenwidth/2
 player.y = screenheight/2
 player.width = 7
 player.height = 7
+-- history
 player.h = {}
+-- length
 player.l = 4
+-- color
 player.c = 8
 -- u=1 l=2 d=3 r=4
 player.dir = 1
+player.dashcooldown = 0
 
 food={}
 
@@ -127,6 +131,9 @@ function gameupdate()
   end
   end
 
+ -- reduce cooldown
+ player.dashcooldown=max(player.dashcooldown-1,0)
+
   -- collisions
   -- screen edge
  if (player.x <= 0 or player.x >= screenwidth or player.y < 12 or player.y >= screenheight) then
@@ -201,6 +208,7 @@ function gamedraw()
  rect(0,0,screenwidth,11,7)
   -- text
   print("score: " .. score, 4, 4, 7)
+  print("dash: " .. player.dashcooldown, screenwidth-36, 4, 7)
 
   playerdraw()
 
@@ -233,6 +241,43 @@ function playercontrol()
   if (btn(2) and player.dir!=3) then player.dir=1 end
   -- d?
   if (btn(3) and player.dir!=1) then player.dir=3 end
+
+  -- dash
+  if (btnp(4) and player.dashcooldown==0) then
+   local dashamount=10
+   -- up
+   if (player.dir==1) then
+    player.y -= dashamount
+    for i=1,dashamount do
+     add(player.h,{x=player.x,y=(dashamount+player.y)-i})
+    end
+   -- left
+   elseif (player.dir==2) then
+    player.x -= dashamount
+    for i=1,dashamount do
+     add(player.h,{x=(dashamount+player.x)-i,y=player.y})
+    end
+   -- down
+   elseif (player.dir==3) then
+    player.y += dashamount
+    for i=1,dashamount do
+     add(player.h,{x=player.x,y=(player.y-dashamount)+i})
+    end
+   -- right
+   elseif (player.dir==4) then
+    player.x += dashamount
+    for i=1,dashamount do
+     add(player.h,{x=(player.x-dashamount)+i,y=player.y})
+    end
+   end
+
+   for x=1,dashamount do
+    del(player.h,player.h[1])
+   end
+
+   sfx(5)
+   player.dashcooldown=6
+  end
 end
 
 -- draw player sprite
@@ -459,7 +504,7 @@ __sfx__
 010600003557730573325033050632506325063560737607306003b6033c603356033c60335603346033c6031c0001d0001c4001d0001c0001c0001c0001c0001c0001d0001c0001d0001c000000000000000000
 00100000180701a070180701a07021070180001f0701d0701c0701c07018070180701807018070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000002400030000245501d3701a070000001a070000001a0701a670000001a670000001a670000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0103000018175181753017537175186401d640186301a6201d600040000200002000020000200002000020000100006000130001300011000100000e0000c0000b0000b0000c0000b0000a0000a0000a0000a000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
