@@ -183,7 +183,7 @@ function gameupdate()
 end
 
 function gameoverupdate()
- if btnp(4) then
+ if btn(4) and btn(5) then
     gameinit()
   end
   timer += 1
