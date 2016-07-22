@@ -6,15 +6,23 @@ Snake Ideas
 	Food spoils
 	Levels
 	Different sized food
-	Snake Dash
+	- Snake Dash
 		Speed boost (fast ramp up, ease out)
-		Can go thru self
+		x Can go thru self
+		x Collect food when dashing thru food
+		Bonus if
+			Dash thru food
+			Collect food on last frame of dash (dash lands on food)
+			Dash over self
+			Dash land within 1 space of wall or self
+			Tony hawk style combos but not super annoying?
 		Solves problem of slow early game and opens up movement mid-late game
 		Hold and release instead of immediate fire?
 			If snake trail colors change over time, hold could bullet time, evident from snake
 			colors slowing down
 			Hold and release could show end position ghost
 		If works, "Snake Dash" good name for game?
+	Portal snake, like dash but portals instead, skips over space, can use again later?
 
 Polish ideas
 	Snake trail colors do things when eating shit

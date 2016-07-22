@@ -4,11 +4,14 @@ __lua__
 -- snake
 -- mistercrow2
 
--- global vars
+-- debug
 skiptitle=1
-scene=0
+-- screen
 screenwidth = 127
 screenheight = 127
+-- game state
+scene=0
+-- player
 player = {}
 player.x = screenwidth/2
 player.y = screenheight/2
@@ -24,10 +27,14 @@ player.c = 8
 player.dir = 1
 player.dashcooldown = 0
 
+-- items
 food={}
 
+-- game logic
 timer = 0
 score=0
+dashamount=20
+dashcooldown=15
 
 function _init()
   if (skiptitle==1) then scene = 1 end
@@ -150,17 +157,12 @@ function gameupdate()
  end
 
  -- food
- -- iscolliding(obj1, obj2)
  local playerobj={x=player.x,y=player.y,w=1,h=1}
  for f in all(food) do
   local foodobj={x=f.x,y=f.y,w=4,h=4}
   -- got food!
   if iscolliding(playerobj,foodobj) then
-    sfx(2)
-    del(food,f)
-    score+=100
-    player.l += 20
-    spawnfood(1)
+    collectfood(food,f)
   end
  end
 
@@ -184,9 +186,9 @@ end
 
 function gameoverupdate()
  if btn(4) and btn(5) then
-    gameinit()
-  end
-  timer += 1
+  gameinit()
+ end
+ timer += 1
 end
 
 -- draw functions
@@ -219,15 +221,32 @@ function gamedraw()
 end
 
 function gameoverdraw()
+ local pad=20
  if timer > 70 then
   for x=1,1950 do
    local xx = flr(rnd(screenwidth))
-   local yy = flr(rnd(screenheight))
+   local yy = flr(rnd(screenheight-pad))
    local cc = pget(xx,yy)
    if (cc==7 or flr(rnd(10))<=3) then
+    -- change to drip left / right at first
+    if timer < 120 then
+     if (flr(rnd(100))==5) then xx+=1 elseif(flr(rnd(100))==10) then xx-=1 end
+    -- change to randomly become red after
+    else
+     if (flr(rnd(100)) == 2) then
+      pset(flr(rnd(screenwidth)),flr(rnd(screenheight)),8)
+     end
+    end
     pset(xx,yy+1,cc)
    end
   end
+ end
+
+ rectfill(0,screenheight-pad,screenwidth,screenheight,9)
+ if btn(4) then
+  print('z',20,screenheight-pad+1,5)
+ elseif btn(5) then
+  print('x',60,screenheight-pad+1,5)
  end
 end
 
@@ -244,30 +263,37 @@ function playercontrol()
 
   -- dash
   if (btnp(4) and player.dashcooldown==0) then
-   local dashamount=10
    -- up
    if (player.dir==1) then
     player.y -= dashamount
     for i=1,dashamount do
-     add(player.h,{x=player.x,y=(dashamount+player.y)-i})
+     local newpos = {x=player.x,y=(dashamount+player.y)-i}
+     add(player.h,newpos)
+     dashfoodcollect(food,newpos)
     end
    -- left
    elseif (player.dir==2) then
     player.x -= dashamount
     for i=1,dashamount do
-     add(player.h,{x=(dashamount+player.x)-i,y=player.y})
+     local newpos = {x=(dashamount+player.x)-i,y=player.y}
+     add(player.h,newpos)
+     dashfoodcollect(food,newpos)
     end
    -- down
    elseif (player.dir==3) then
     player.y += dashamount
     for i=1,dashamount do
-     add(player.h,{x=player.x,y=(player.y-dashamount)+i})
+     local newpos = {x=player.x,y=(player.y-dashamount)+i}
+     add(player.h,newpos)
+     dashfoodcollect(food,newpos)
     end
    -- right
    elseif (player.dir==4) then
     player.x += dashamount
     for i=1,dashamount do
-     add(player.h,{x=(player.x-dashamount)+i,y=player.y})
+     local newpos = {x=(player.x-dashamount)+i,y=player.y}
+     add(player.h,newpos)
+     dashfoodcollect(food,newpos)
     end
    end
 
@@ -276,7 +302,7 @@ function playercontrol()
    end
 
    sfx(5)
-   player.dashcooldown=6
+   player.dashcooldown=dashcooldown
   end
 end
 
@@ -296,6 +322,23 @@ end
 function spawnfood(c)
  for i=1,c do
   add(food,{x=rnd(screenwidth-10)+2,y=rnd(screenheight-25)+14})
+ end
+end
+
+function collectfood(foodlist, food)
+ sfx(2)
+ del(foodlist,food)
+ score+=100
+ player.l += 20
+ spawnfood(1)
+end
+
+-- collects food if pos collides with any food
+function dashfoodcollect(food,pos)
+ for f in all(food) do
+  if (iscolliding({x=pos.x,y=pos.y,w=1,h=1},{x=f.x,y=f.y,w=4,h=4})) then
+   collectfood(food,f)
+  end
  end
 end
 
