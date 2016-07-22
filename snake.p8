@@ -76,7 +76,7 @@ function gameinit()
 
  -- food
  food = {}
- spawnfood(10)
+ spawnfood(4)
 
  music(1)
 end
@@ -204,12 +204,12 @@ function gamedraw()
 end
 
 function gameoverdraw()
- if timer > 60 then
-  for x=1,35 do
+ if timer > 70 then
+  for x=1,1950 do
    local xx = flr(rnd(screenwidth))
    local yy = flr(rnd(screenheight))
    local cc = pget(xx,yy)
-   if (cc==7 or flr(rnd(10))==3) then
+   if (cc==7 or flr(rnd(10))<=3) then
     pset(xx,yy+1,cc)
    end
   end
@@ -242,9 +242,8 @@ function playerdraw()
 end
 
 function spawnfood(c)
- local padding=10
  for i=1,c do
-  add(food,{x=rnd(screenwidth-padding)+padding,y=rnd(screenheight-padding)+padding})
+  add(food,{x=rnd(screenwidth-10)+2,y=rnd(screenheight-25)+14})
  end
 end
 
