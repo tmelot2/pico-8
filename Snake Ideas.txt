@@ -21,7 +21,14 @@ Snake Ideas
 			If snake trail colors change over time, hold could bullet time, evident from snake
 			colors slowing down
 			Hold and release could show end position ghost
+		Item pickups?
+			Pick up > inventory > push x to use
+				Scissors: Next self cross, cut body and clear old
+				GPS: Auto turn on wall hit
+				Vaccum: Suck in nearby food
 		If works, "Snake Dash" good name for game?
+	Spawn lines of food for easy fun comboing
+
 	Portal snake, like dash but portals instead, skips over space, can use again later?
 
 Polish ideas
