@@ -229,7 +229,7 @@ function gameoverdraw()
    local cc = pget(xx,yy)
    if (cc==7 or flr(rnd(10))<=3) then
     -- change to drip left / right at first
-    if timer < 120 then
+    if timer < 180 then
      if (flr(rnd(100))==5) then xx+=1 elseif(flr(rnd(100))==10) then xx-=1 end
     -- change to randomly become red after
     else
@@ -319,12 +319,14 @@ function playerdraw()
   end
 end
 
+-- randomly spawn new food, c=count
 function spawnfood(c)
  for i=1,c do
   add(food,{x=rnd(screenwidth-10)+2,y=rnd(screenheight-25)+14})
  end
 end
 
+-- collects food in foodlist, spawns new food
 function collectfood(foodlist, food)
  sfx(2)
  del(foodlist,food)
