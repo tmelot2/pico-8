@@ -120,7 +120,7 @@ function gameupdate()
   end
   end
 
-  // collisions
+  -- collisions
   -- screen edge
  if (player.x <= 0 or player.x >= screenwidth or player.y < 12 or player.y >= screenheight) then
   gameover()
@@ -150,7 +150,7 @@ function gameupdate()
   end
  end
 
- // player length
+ -- player length
  -- add to trail
  add(player.h,{x=player.x,y=player.y})
  -- delete end of trail
@@ -185,14 +185,14 @@ function titledraw()
 end
 
 function gamedraw()
- // bg
+ -- bg
   rectfill(0,0,screenwidth, screenheight, 12)
- // hud
+ -- hud
   rectfill(0,0,screenwidth, 10, 0)
-  // border
+  -- border
   rect(0,0,screenwidth,screenheight,7)
  rect(0,0,screenwidth,11,7)
-  // text
+  -- text
   print("score: " .. score, 4, 4, 7)
 
   playerdraw()
