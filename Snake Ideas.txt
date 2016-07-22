@@ -29,3 +29,6 @@ Polish ideas
 	Width can grow?
 	Damage numbers
 	Different food
+
+Bugs
+	Can dash land in wall and not die...turn into secret?
