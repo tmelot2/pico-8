@@ -1,6 +1,6 @@
 Snake Ideas
 	Countdown before start
-	Spawn food inside edges of map
+	x Spawn food inside edges of map
 	Don't spawn food on top of each other
 	Don't spawn food on player
 	Food spoils
