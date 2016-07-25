@@ -260,13 +260,14 @@ end
 -- handle button inputs
 function playercontrol()
  -- l?
-  if (btn(0) and player.dir!=4) then player.dir=2 end
+  if (btn(0) and player.dir!=4) then player.dir=2
  -- r?
-  if (btn(1) and player.dir!=2) then player.dir=4 end
+  elseif (btn(1) and player.dir!=2) then player.dir=4
   -- u?
-  if (btn(2) and player.dir!=3) then player.dir=1 end
+  elseif (btn(2) and player.dir!=3) then player.dir=1
   -- d?
-  if (btn(3) and player.dir!=1) then player.dir=3 end
+  elseif (btn(3) and player.dir!=1) then player.dir=3
+  end
 
   -- dash
   if (btnp(4) and player.dashcooldown==0) then
@@ -383,6 +384,11 @@ function iscolliding(obj1, obj2)
   else
     return false
   end
+end
+
+-- shorthand for flr(rnd(x))
+function frnd(x)
+ return flr(rnd(x))
 end
 
 __gfx__
