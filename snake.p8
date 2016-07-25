@@ -228,20 +228,27 @@ function gameoverdraw()
    local yy = flr(rnd(screenheight-pad))
    local cc = pget(xx,yy)
    if (cc==7 or flr(rnd(10))<=3) then
-    -- change to drip left / right at first
+    -- change to drip left/right at first
     if timer < 180 then
+     -- drop left/right
      if (flr(rnd(100))==5) then xx+=1 elseif(flr(rnd(100))==10) then xx-=1 end
-    -- change to randomly become red after
-    else
+     -- drip darker from top
+     if (flr(rnd(50)) == 10) then pset(flr(rnd(screenwidth+1)),0,2) end
+    -- change to only become red after
+    elseif timer < 360 then
      if (flr(rnd(100)) == 2) then
-      pset(flr(rnd(screenwidth)),flr(rnd(screenheight)),8)
+      pset(flr(rnd(screenwidth+1)),flr(rnd(screenheight)),8)
      end
+    -- black drips from top
+    else
+      if (flr(rnd(100))%5==0) then pset(flr(rnd(screenwidth)),0,0) end
     end
     pset(xx,yy+1,cc)
    end
   end
  end
 
+ -- continue overlay
  rectfill(0,screenheight-pad,screenwidth,screenheight,9)
  if btn(4) then
   print('z',20,screenheight-pad+1,5)
