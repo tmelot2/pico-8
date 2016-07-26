@@ -46,7 +46,7 @@ snakepalettes = {
  snakorpion = {10,10,10,10,10,10,10,10,0,0},
  rainbow = {7,7,14,14,8,8,9,9,10,10,11,11,3,3,12,12,2,2}
 }
-snakepalette = snakepalettes.snakorpion
+snakepalette = snakepalettes.texascoralsnake
 
 -- food sprites
 foodsprites = {1,2,17}
@@ -241,8 +241,7 @@ function gamedraw()
 
   -- food
   for f in all(food) do
-   local foodsprite = f.s
-   spr(foodsprite,f.x,f.y)
+   spr(f.s,f.x,f.y)
   end
 end
 
