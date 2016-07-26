@@ -25,7 +25,8 @@ player.l = 4
 player.c = 8
 -- u=1 l=2 d=3 r=4
 player.dir = 1
-player.dashcooldown = 0
+-- 0 = not dashing, >0 = dashing
+player.dashframe = 0
 
 -- items
 food={}
@@ -34,7 +35,14 @@ food={}
 timer = 0
 score=0
 dashamount=20
-dashcooldown=15
+dashframes=10
+
+-- graphics
+snakepalettes = {
+ plain = {8,10},
+ texascoralsnake = {0,0,0,10,8,8,8,10}
+}
+snakepalette = snakepalettes.plain
 
 function _init()
   if (skiptitle==1) then scene = 1 end
@@ -139,7 +147,14 @@ function gameupdate()
   end
 
  -- reduce cooldown
- player.dashcooldown=max(player.dashcooldown-1,0)
+ -- player dash
+ if (player.dashframe > 0) then
+   if (player.dashframe > dashframes) then
+    player.dashframe = 0
+   else
+    player.dashframe += 1
+   end
+ end
 
   -- collisions
   -- screen edge
@@ -210,7 +225,7 @@ function gamedraw()
  rect(0,0,screenwidth,11,7)
   -- text
   print("score: " .. score, 4, 4, 7)
-  print("dash: " .. player.dashcooldown, screenwidth-36, 4, 7)
+  print("dash: " .. player.dashframe, screenwidth-36, 4, 7)
 
   playerdraw()
 
@@ -270,7 +285,8 @@ function playercontrol()
   end
 
   -- dash
-  if (btnp(4) and player.dashcooldown==0) then
+  if (btnp(4) and player.dashframe == 0) then
+   player.dashframe = 1
    -- up
    if (player.dir==1) then
     player.y -= dashamount
@@ -310,20 +326,22 @@ function playercontrol()
    end
 
    sfx(5)
-   player.dashcooldown=dashcooldown
   end
 end
 
 -- draw player sprite
 function playerdraw()
-  -- current pos
- pset(player.x,player.y,11)
+  -- head (current pos)
+  pset(player.x,player.y,11)
   -- spr(0, player.x, player.y)
+
   -- tail
+  local i = 1
   for v in all(player.h) do
    if (v.x!=player.x or v.y!=player.y) then
-   pset(v.x,v.y,3)
-  end
+    pset(v.x,v.y,10)
+   end
+   i += 1
   end
 end
 
