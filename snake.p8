@@ -38,11 +38,18 @@ dashamount=20
 dashframes=10
 
 -- graphics
+-- snake palettes
 snakepalettes = {
- plain = {8,10},
- texascoralsnake = {0,0,0,10,8,8,8,10}
+ plain = {3,3,3,2,2,1,0},
+ texascoralsnake = {0,0,0,10,8,8,8,10},
+ snakezero = {12,12,12,12,12,12,12,1,1,0,0},
+ snakorpion = {10,10,10,10,10,10,10,10,0,0},
+ rainbow = {7,7,14,14,8,8,9,9,10,10,11,11,3,3,12,12,2,2}
 }
-snakepalette = snakepalettes.plain
+snakepalette = snakepalettes.snakorpion
+
+-- background
+bgcolor = 5
 
 function _init()
   if (skiptitle==1) then scene = 1 end
@@ -217,7 +224,7 @@ end
 
 function gamedraw()
  -- bg
-  rectfill(0,0,screenwidth, screenheight, 12)
+  rectfill(0,0,screenwidth, screenheight, bgcolor)
  -- hud
   rectfill(0,0,screenwidth, 10, 0)
   -- border
@@ -339,7 +346,8 @@ function playerdraw()
   local i = 1
   for v in all(player.h) do
    if (v.x!=player.x or v.y!=player.y) then
-    pset(v.x,v.y,10)
+    local c = snakepalette[i%(#snakepalette)+1]
+    pset(v.x,v.y,c)
    end
    i += 1
   end
