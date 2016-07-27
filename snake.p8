@@ -222,7 +222,17 @@ end
 function crumbsupdate()
  for c in all(crumbs) do
   c.x += c.vx
+  -- bounce off either side of screen
+  if (c.x < 1) then c.x = 1 c.vx = c.vx * -0.50
+  elseif (c.x > screenwidth-1) then c.x = screenwidth-1 c.vx = c.vx * -0.50
+  end
+
   c.y += c.vy
+  -- bounce off top or bottom of screen
+  if (c.y < 11) then c.y = 11 c.vy = c.vy * -0.50
+  elseif (c.y > screenheight-1) then c.y = screenheight-1 c.vy = c.vy * -0.50
+  end
+
   c.vx *= 0.50
   c.vy *= 0.50
   c.tick += 1
@@ -247,13 +257,19 @@ function titledraw()
 end
 
 function gamedraw()
- -- bg
+  -- bg
   rectfill(0,0,screenwidth, screenheight, bgcolor)
- -- hud
+
+  -- crumbs
+  for c in all(crumbs) do
+  pset(c.x, c.y, c.c)
+  end
+
+  -- hud
   rectfill(0,0,screenwidth, 10, 0)
   -- border
   rect(0,0,screenwidth,screenheight,7)
- rect(0,0,screenwidth,11,7)
+  rect(0,0,screenwidth,11,7)
   -- text
   print("score: " .. score, 4, 4, 7)
   print("dash: " .. player.dashframe, screenwidth-36, 4, 7)
@@ -270,11 +286,6 @@ function gamedraw()
    spr(6+p.tick,p.x,p.y)
    p.tick+=1
    if (p.tick > 4) then del(shine,p) end
-  end
-
-  -- crumbs
-  for c in all(crumbs) do
-   pset(c.x, c.y, c.c)
   end
 end
 
@@ -399,13 +410,18 @@ function spawnfood(c)
 end
 
 function spawncrumbs(x,y,d)
+ local num = frnd(7)+8
  local range = 5
+
+ -- If player dashing, more crumbs & move further
+ if (player.dashframe > 0) then
+  num += 5
+  range = 15
+ end
+
  local friction = 0.20
  local colors = {1,2}
-
  local sign1 = 1
-
- local num = 10
  local vx = 0
  local vy = 0
 
