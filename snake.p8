@@ -54,6 +54,9 @@ foodsprites = {1,2,17}
 -- shine
 shine={}
 
+-- crumbs
+crumbs={}
+
 -- background
 bgcolor = 5
 
@@ -110,6 +113,8 @@ function gameinit()
  food = {}
  spawnfood(4)
 
+ crumbs={}
+
  music(1)
 end
 
@@ -159,7 +164,6 @@ function gameupdate()
   end
   end
 
- -- reduce cooldown
  -- player dash
  if (player.dashframe > 0) then
    if (player.dashframe > dashframes) then
@@ -202,6 +206,9 @@ function gameupdate()
   del(player.h,player.h[1])
  end
 
+ -- crumbs
+ crumbsupdate()
+
   -- timer
   timer+=1
   -- score
@@ -209,6 +216,17 @@ function gameupdate()
 
  if (score%12==0) then
   -- player.l += 5
+ end
+end
+
+function crumbsupdate()
+ for c in all(crumbs) do
+  c.x += c.vx
+  c.y += c.vy
+  c.vx *= 0.50
+  c.vy *= 0.50
+  c.tick += 1
+  if (c.tick == 450) then del(crumbs,c) end
  end
 end
 
@@ -252,6 +270,11 @@ function gamedraw()
    spr(6+p.tick,p.x,p.y)
    p.tick+=1
    if (p.tick > 4) then del(shine,p) end
+  end
+
+  -- crumbs
+  for c in all(crumbs) do
+   pset(c.x, c.y, c.c)
   end
 end
 
@@ -375,8 +398,48 @@ function spawnfood(c)
  end
 end
 
+function spawncrumbs(x,y,d)
+ local range = 5
+ local friction = 0.20
+ local colors = {1,2}
+
+ local sign1 = 1
+
+ local num = 10
+ local vx = 0
+ local vy = 0
+
+ for i=1,num do
+  if (rnd(1) < friction) then sign=-1 else sign=1 end
+  -- fan out crumbs in the direction of player movement
+  if (d == 1) then
+   vx = rnd(range/2)*sign
+   vy = rnd(range)*-1
+  elseif (d == 2) then
+   vx = rnd(range)*-1
+   vy = rnd(range/2)*-sign
+  elseif (d == 3) then
+   vx = rnd(range/2)*sign
+   vy = rnd(range)
+  elseif (d == 4) then
+   vx = rnd(range)
+   vy = rnd(range/2)*sign
+  end
+
+  add(crumbs,{
+   x = x,
+   y = y,
+   vx = vx,
+   vy = vy,
+   c = colors[frnd(#colors)+1],
+   tick = frnd(75)
+  })
+ end
+end
+
 -- collects food in foodlist, spawns new food
 function collectfood(foodlist, food)
+ spawncrumbs(food.x,food.y,player.dir)
  sfx(2)
  del(foodlist,food)
  score+=100
