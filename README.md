@@ -1,4 +1,5 @@
 # pico-8
 Learning and playing around with Pico-8.
 
-Using https://github.com/ojdon/pico8-boilerplate as the base for snake.p8, my first Pico-8 game!
+## snake.p8
+Snake Dash, my first Pico-8 game! A prototype for a Snake clone with a dash mechanic. Boilerplate provided by https://github.com/ojdon/pico8-boilerplate.
