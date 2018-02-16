@@ -1,6 +1,6 @@
-Snake Ideas
+Snake Dash Ideas
 	Countdown before start
-	x Spawn food inside edges of map
+	[x] Spawn food inside edges of map
 	Don't spawn food on top of each other
 	Don't spawn food on player
 	Food spoils
@@ -8,8 +8,8 @@ Snake Ideas
 	Different sized food
 	- Snake Dash
 		Speed boost (fast ramp up, ease out)
-		x Can go thru self
-		x Collect food when dashing thru food
+		[x] Can go thru self
+		[x] Collect food when dashing thru food
 		Bonus if
 			Dash thru food
 			Collect food on last frame of dash (dash lands on food)

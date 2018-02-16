@@ -1,7 +1,10 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
--- snake
+-- snake dash
+-- note: this is intentionally sloppy code as it's just a rough rough prototype
+-- to play around with ideas and learn pico-8! i would never use code like this
+-- in production.
 -- mistercrow2
 
 -- debug
@@ -413,7 +416,7 @@ function spawncrumbs(x,y,d)
  local num = frnd(7)+8
  local range = 5
 
- -- If player dashing, more crumbs & move further
+ -- if player dashing, more crumbs & move further
  if (player.dashframe > 0) then
   num += 5
   range = 15
