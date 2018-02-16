@@ -5,7 +5,7 @@ __lua__
 -- note: this is intentionally sloppy code as it's just a rough rough prototype
 -- to play around with ideas and learn pico-8! i would never use code like this
 -- in production.
--- mistercrow2
+-- tmelot
 
 -- debug
 skiptitle=1
