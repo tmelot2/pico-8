@@ -8,7 +8,7 @@ __lua__
 -- tmelot
 
 -- debug
-skiptitle=1
+skiptitle=0
 -- screen
 screenwidth = 127
 screenheight = 127
@@ -63,6 +63,9 @@ crumbs={}
 -- background
 bgcolor = 5
 
+-- timer
+tick = 0
+
 function _init()
   if (skiptitle==1) then scene = 1 end
 
@@ -81,6 +84,10 @@ function _update()
     gameupdate()
  elseif scene==2 then
   gameoverupdate()
+  end
+  tick = tick + 1
+  if tick > 360 then
+    tick = 0
   end
 end
 
@@ -127,11 +134,11 @@ function gameover()
 end
 
 function gameoverinit()
-  scene = 2
-  timer = 0
+ scene = 2
+ timer = 0
  music(-1)
  rectfill(0,0,screenwidth,screenheight,8)
-   local text = 'u died bitch'
+ local text = 'u died fool'
  print(text,hcenter(text),vcenter(text)-20,7)
 
  local text = 'final score'
@@ -143,7 +150,7 @@ function gameoverinit()
  print(text,hcenter(text),vcenter(text)+22,7)
  local text = 'z'
  print(text,hcenter(text)-2,vcenter(text)+22,11)
- local text = 'that shit again'
+ local text = 'it again'
  print(text,hcenter(text),vcenter(text)+30,7)
 end
 
@@ -215,7 +222,9 @@ function gameupdate()
   -- timer
   timer+=1
   -- score
-  score+=1
+  if tick%30==0 then
+   score+=1
+  end
 
  if (score%12==0) then
   -- player.l += 5
@@ -252,11 +261,19 @@ end
 
 -- draw functions
 function titledraw()
+
   local titletxt = "t3h snake!!1"
   local starttxt = "presssss z to ssssstart"
   rectfill(0,0,screenwidth, screenheight, 3)
-  print(titletxt, hcenter(titletxt), screenheight/4, 10)
-  print(starttxt, hcenter(starttxt), (screenheight/4)+(screenheight/2),7)
+  pdraw(titletxt, 24, 29, 5, 5)
+  pdraw(titletxt, 25, 30, 5, 7)
+end
+
+function pdraw(s,x,y,h,c)
+  for s in all(s) do
+    print(s,10+x,y + h*sin((1.2*x-tick*1.4)*(3.1459/180)), c)
+    x+=5
+  end
 end
 
 function gamedraw()
@@ -294,6 +311,7 @@ end
 
 function gameoverdraw()
  local pad=20
+
  if timer > 70 then
   for x=1,1950 do
    local xx = flr(rnd(screenwidth))
@@ -423,7 +441,12 @@ function spawncrumbs(x,y,d)
  end
 
  local friction = 0.20
- local colors = {1,2}
+ local colors
+ if frnd(2) == 0 then
+  colors = {1,2}
+ else
+  colors = {4,2}
+ end
  local sign1 = 1
  local vx = 0
  local vy = 0
@@ -477,11 +500,12 @@ end
 
 -- library functions
 --- center align from: pico-8.wikia.com/wiki/centering_text
-function hcenter(s)
+function hcenter(s,extra_x)
   -- string length time     s the
   -- pixels in a char's width
   -- cut in half and rounded down
-  return (screenwidth / 2)-flr((#s*4)/2)
+  ex = extra_x or 0
+  return (screenwidth / 2)-flr((#s*(4+ex))/2)
 end
 
 function vcenter(s)
