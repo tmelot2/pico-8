@@ -1,4 +1,7 @@
 Snake Dash Ideas
+	Chained food - multi tiles, sometimes straight, sometimes bent
+		- if you eat in right order, GOURANGA!
+		- else, it breaks & you don't get bonus
 	Countdown before start
 	[x] Spawn food inside edges of map
 	Don't spawn food on top of each other
