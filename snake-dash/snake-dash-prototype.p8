@@ -50,6 +50,9 @@ snakepalettes = {
  rainbow = {7,7,14,14,8,8,9,9,10,10,11,11,3,3,12,12,2,2}
 }
 snakepalette = snakepalettes.texascoralsnake
+snakepalette = snakepalettes.rainbow
+snakepalette = snakepalettes.snakorpion
+snakepalette = snakepalettes.snakezero
 
 -- food sprites
 foodsprites = {1,2,17}
@@ -66,6 +69,9 @@ bgcolor = 5
 -- timer
 tick = 0
 
+-- dead
+circles = {}
+
 function _init()
   if (skiptitle==1) then scene = 1 end
 
@@ -81,10 +87,17 @@ function _update()
   if scene==0 then
     titleupdate()
   elseif scene==1 then
-    gameupdate()
+   if not player.dead then
+     gameupdate()
+   else
+    deadupdate()
+    timer = 0
+   end
  elseif scene==2 then
   gameoverupdate()
-  end
+ elseif scene==3 then
+  deadupdate()
+ end
   tick = tick + 1
   if tick > 360 then
     tick = 0
@@ -98,6 +111,8 @@ function _draw()
     gamedraw()
   elseif scene==2 then
    gameoverdraw()
+  elseif scene==3 then
+   deaddraw()
   end
 end
 
@@ -115,6 +130,7 @@ function gameinit()
  player.c = 8
  player.h = {}
  player.l = 20
+ player.dead = false
  scene = 1
   timer = 0
  score = 0
@@ -128,10 +144,59 @@ function gameinit()
  music(1)
 end
 
-function gameover()
- sfx(0)
- gameoverinit()
+function deadinit()
+ scene = 3
+ timer = 0
+ circles = {}
 end
+
+function deadupdate()
+ if #player.h > 1 then
+  -- add(circles, {x = frnd(100), frnd(100), r=frnd(20)+5, c=0})
+  -- add(circles, {x = 100, 100, r=20+5, c=0})
+  add(circles, {x = player.h[#player.h].x, y = player.h[#player.h].y, r=frnd(4)+2, c=snakepalette[#player.h%(#snakepalette)+1]})
+  delete_cnt = 1 + (flr(timer/5)*flr(timer/5)) / 8
+  for i=0,delete_cnt do
+   del(player.h,player.h[#player.h])
+  end
+  if timer % 2 == 0 then
+   sfx(0,-1,timer)
+  end
+  timer += 1
+ else
+  gameoverinit()
+ end
+end
+
+function deaddraw()
+ rectfill(0,0,screenwidth, screenheight, bgcolor)
+ playerdraw()
+ for c in all(circles) do
+  circfill(c.x, c.y, c.r, c.c)
+ end
+ -- local x=player.h[1][x]
+ -- local y=player.h[1][y]
+ -- for i=1,20 do
+ --  circ(x, y, frnd(20), frnd(10))
+ -- end
+ -- if timer < dead_time then
+ --  del(player.h[0])
+  -- expl_pal = snakepalette
+  -- expl_pal = {10,9,8} -- fire colors
+  -- circ(player.x, player.y, timer, expl_pal[frnd(#expl_pal)+1])
+  -- circ(player.x, player.y, timer+1, expl_pal[frnd(#expl_pal)+1])
+  -- circ(player.x, player.y, timer+2, expl_pal[frnd(#expl_pal)+1])
+  -- circ(player.x, player.y, timer+3, expl_pal[frnd(#expl_pal)+1])
+ -- end
+end
+
+
+function gameover()
+ player.dead = true 
+ timer = 0
+ deadinit()
+end
+
 
 function gameoverinit()
  scene = 2
@@ -141,10 +206,7 @@ function gameoverinit()
  local text = 'u died fool'
  print(text,hcenter(text),vcenter(text)-20,7)
 
- local text = 'final score'
- print(text,hcenter(text),vcenter(text)-8)
- local text = ''..score
- print(text,hcenter(text),vcenter(text)-0,11)
+ finalscoredraw()
 
  local text = 'press z to try'
  print(text,hcenter(text),vcenter(text)+22,7)
@@ -232,23 +294,32 @@ function gameupdate()
 end
 
 function crumbsupdate()
+ local i=0
  for c in all(crumbs) do
-  c.x += c.vx
-  -- bounce off either side of screen
-  if (c.x < 1) then c.x = 1 c.vx = c.vx * -0.50
-  elseif (c.x > screenwidth-1) then c.x = screenwidth-1 c.vx = c.vx * -0.50
-  end
+  if not c.deleted then
+   c.x += c.vx
+   -- bounce off either side of screen
+   if (c.x < 1) then c.x = 1 c.vx = c.vx * -0.50
+   elseif (c.x > screenwidth-1) then c.x = screenwidth-1 c.vx = c.vx * -0.50
+   end
 
-  c.y += c.vy
-  -- bounce off top or bottom of screen
-  if (c.y < 11) then c.y = 11 c.vy = c.vy * -0.50
-  elseif (c.y > screenheight-1) then c.y = screenheight-1 c.vy = c.vy * -0.50
-  end
+   c.y += c.vy
+   -- bounce off top or bottom of screen
+   if (c.y < 11) then c.y = 11 c.vy = c.vy * -0.50
+   elseif (c.y > screenheight-1) then c.y = screenheight-1 c.vy = c.vy * -0.50
+   end
 
-  c.vx *= 0.50
-  c.vy *= 0.50
-  c.tick += 1
-  if (c.tick == 450) then del(crumbs,c) end
+   c.vx *= 0.50
+   c.vy *= 0.50
+   c.tick += 1
+   if (c.tick == 450) then del(crumbs,c) end
+
+  if flr(player.x) == flr(c.x) and flr(player.y) == flr(c.y) then
+   score += 1000
+   c.deleted = true
+  end
+  i+=1
+ end
  end
 end
 
@@ -282,7 +353,9 @@ function gamedraw()
 
   -- crumbs
   for c in all(crumbs) do
-  pset(c.x, c.y, c.c)
+   if not c.deleted then
+    pset(c.x, c.y, c.c)
+  end
   end
 
   -- hud
@@ -336,6 +409,7 @@ function gameoverdraw()
     pset(xx,yy+1,cc)
    end
   end
+ finalscoredraw()
  end
 
  -- continue overlay
@@ -345,6 +419,17 @@ function gameoverdraw()
  elseif btn(5) then
   print('x',60,screenheight-pad+1,5)
  end
+end
+
+function finalscoredraw()
+ local text = ''..score
+ x1 = 28
+ x2 = 100
+ y1 = 60
+ y2 = 66
+ rectfill(x1,y1,x2,y2,8)
+ rect(x1,y1-1,x2,y2+1,3)
+ print(text,hcenter(text),vcenter(text)-0,11)
 end
 
 -- handle button inputs
@@ -406,9 +491,11 @@ end
 
 -- draw player sprite
 function playerdraw()
+ if not player.dead then
   -- head (current pos)
   pset(player.x,player.y,11)
   -- spr(0, player.x, player.y)
+ end
 
   -- tail
   local i = 1
@@ -489,11 +576,16 @@ function collectfood(foodlist, food)
  spawnfood(1)
 end
 
+function collectfoodextrapoints(p)
+ score += p
+end
+
 -- collects food if pos collides with any food
 function dashfoodcollect(food,pos)
  for f in all(food) do
   if (iscolliding({x=pos.x,y=pos.y,w=1,h=1},{x=f.x,y=f.y,w=4,h=4})) then
    collectfood(food,f)
+   collectfoodextrapoints(500)
   end
  end
 end
