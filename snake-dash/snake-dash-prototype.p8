@@ -174,24 +174,11 @@ end
 
 function deaddraw()
  rectfill(0,0,screenwidth, screenheight, bgcolor)
+ crumbsdraw()
  playerdraw()
  for c in all(circles) do
   circfill(c.x, c.y, c.r, c.c)
  end
- -- local x=player.h[1][x]
- -- local y=player.h[1][y]
- -- for i=1,20 do
- --  circ(x, y, frnd(20), frnd(10))
- -- end
- -- if timer < dead_time then
- --  del(player.h[0])
-  -- expl_pal = snakepalette
-  -- expl_pal = {10,9,8} -- fire colors
-  -- circ(player.x, player.y, timer, expl_pal[frnd(#expl_pal)+1])
-  -- circ(player.x, player.y, timer+1, expl_pal[frnd(#expl_pal)+1])
-  -- circ(player.x, player.y, timer+2, expl_pal[frnd(#expl_pal)+1])
-  -- circ(player.x, player.y, timer+3, expl_pal[frnd(#expl_pal)+1])
- -- end
 end
 
 
@@ -339,15 +326,23 @@ function titledraw()
   local titletxt = "t3h snake!!1"
   local starttxt = "presssss z to ssssstart"
   rectfill(0,0,screenwidth, screenheight, 3)
-  pdraw(titletxt, 24, 29, 5, 5)
-  pdraw(titletxt, 25, 30, 5, 7)
+  wavyprint(titletxt, 24, 29, 5, 5)
+  wavyprint(titletxt, 25, 30, 5, 7)
 end
 
-function pdraw(s,x,y,h,c)
+function wavyprint(s,x,y,h,c)
   for s in all(s) do
     print(s,10+x,y + h*sin((1.2*x-tick*1.4)*(3.1459/180)), c)
     x+=5
   end
+end
+
+function crumbsdraw()
+ for c in all(crumbs) do
+  if not c.deleted then
+    pset(c.x, c.y, c.c)
+  end
+ end
 end
 
 function gamedraw()
@@ -355,11 +350,7 @@ function gamedraw()
   rectfill(0,0,screenwidth, screenheight, bgcolor)
 
   -- crumbs
-  for c in all(crumbs) do
-   if not c.deleted then
-    pset(c.x, c.y, c.c)
-  end
-  end
+  crumbsdraw()
 
   -- hud
   rectfill(0,0,screenwidth, 10, 0)
@@ -394,25 +385,24 @@ function messageupdate(newmsg, msgtype)
 end
 
 function messagedraw()
- local intensity
- if messagetype == 'normal' then
-  intensity = 1
- elseif messagetype == 'shake' then
-  intensity = 2
- elseif messagetype == 'shakehard' then
-  intensity = 10
- end
-
  if msgtimer < 60 then
-  x,y = 10,20
+  local intensity
+  if messagetype == 'normal' then
+   intensity = 1
+  elseif messagetype == 'shake' then
+   intensity = 2
+  elseif messagetype == 'shakehard' then
+   intensity = 7
+  end
+
+  x,y = 10,17
   if msgtimer < shaketime then
-   if frnd(11)%2==0 then shakerangex = frnd(intensity) else shakerangex = frnd(intensity) end
-   if frnd(11)%2==0 then shakerangey = frnd(intensity) else shakerangey = frnd(intensity) end
-   print(shakerange, 150,150,7)
+   if frnd(11)%2==0 then shakerangex = frnd(intensity) else shakerangex = -1*frnd(intensity) end
+   if frnd(11)%2==0 then shakerangey = frnd(intensity) else shakerangey = -1*frnd(intensity) end
    x += shakerangex
    y += shakerangey
   end
-  print(message, x, y, 0)
+  wavyprint(message, x-15, y, 2, 8)
  end
  msgtimer += 1
 end
