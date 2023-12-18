@@ -50,9 +50,9 @@ snakepalettes = {
  rainbow = {7,7,14,14,8,8,9,9,10,10,11,11,3,3,12,12,2,2}
 }
 snakepalette = snakepalettes.texascoralsnake
-snakepalette = snakepalettes.rainbow
 snakepalette = snakepalettes.snakorpion
 snakepalette = snakepalettes.snakezero
+snakepalette = snakepalettes.rainbow
 
 -- food sprites
 foodsprites = {1,2,17}
@@ -71,6 +71,10 @@ tick = 0
 
 -- dead
 circles = {}
+
+-- message
+msgtimer = 0
+shaketime = 6
 
 function _init()
   if (skiptitle==1) then scene = 1 end
@@ -315,7 +319,6 @@ function crumbsupdate()
    if (c.tick == 450) then del(crumbs,c) end
 
   if flr(player.x) == flr(c.x) and flr(player.y) == flr(c.y) then
-   score += 1000
    c.deleted = true
   end
   i+=1
@@ -360,6 +363,8 @@ function gamedraw()
 
   -- hud
   rectfill(0,0,screenwidth, 10, 0)
+  -- message
+  messagedraw()
   -- border
   rect(0,0,screenwidth,screenheight,7)
   rect(0,0,screenwidth,11,7)
@@ -380,6 +385,58 @@ function gamedraw()
    p.tick+=1
    if (p.tick > 4) then del(shine,p) end
   end
+end
+
+function messageupdate(newmsg, msgtype)
+ msgtimer = 0
+ message = newmsg
+ messagetype = msgtype or 'normal'
+end
+
+function messagedraw()
+ local intensity
+ if messagetype == 'normal' then
+  intensity = 1
+ elseif messagetype == 'shake' then
+  intensity = 2
+ elseif messagetype == 'shakehard' then
+  intensity = 10
+ end
+
+ if msgtimer < 60 then
+  x,y = 10,20
+  if msgtimer < shaketime then
+   if frnd(11)%2==0 then shakerangex = frnd(intensity) else shakerangex = frnd(intensity) end
+   if frnd(11)%2==0 then shakerangey = frnd(intensity) else shakerangey = frnd(intensity) end
+   print(shakerange, 150,150,7)
+   x += shakerangex
+   y += shakerangey
+  end
+  print(message, x, y, 0)
+ end
+ msgtimer += 1
+end
+
+function eatmessage()
+ msgs = {
+  'yum',
+  'delicious',
+  'deliciousioso!!',
+  'so good',
+  'mmm',
+  'tastes like chicken',
+  'woo!'
+ }
+ messageupdate(msgs[frnd(#msgs)], 'shake')
+end
+
+function dasheatmessage()
+ msgs = {
+  'radical',
+  'bodacious',
+  'righteous eating'
+ }
+ messageupdate(msgs[frnd(#msgs)], 'shakehard')
 end
 
 function gameoverdraw()
@@ -574,6 +631,7 @@ function collectfood(foodlist, food)
  score+=100
  player.l += 20
  spawnfood(1)
+ eatmessage()
 end
 
 function collectfoodextrapoints(p)
@@ -586,6 +644,7 @@ function dashfoodcollect(food,pos)
   if (iscolliding({x=pos.x,y=pos.y,w=1,h=1},{x=f.x,y=f.y,w=4,h=4})) then
    collectfood(food,f)
    collectfoodextrapoints(500)
+   dasheatmessage()
   end
  end
 end
