@@ -36,9 +36,12 @@ food={}
 
 -- game logic
 timer = 0
-score=0
-dashamount=20
-dashframes=10
+score = 0
+dashamount = 20
+dashframes = 10
+comboNum = 0
+comboTimer = 0
+COMBO_THRESHOLD = 60
 
 -- graphics
 -- snake palettes
@@ -73,10 +76,10 @@ tick = 0
 circles = {}
 
 -- message
-msgtimer = 0
-shaketime = 6
-
+msgTimer = 0
+shakeTime = 6
 function _init()
+
   if (skiptitle==1) then scene = 1 end
 
   if scene==0 then
@@ -91,16 +94,16 @@ function _update()
   if scene==0 then
     titleupdate()
   elseif scene==1 then
-   if not player.dead then
-     gameupdate()
-   else
-    deadupdate()
-    timer = 0
-   end
+  	if not player.dead then
+	    gameupdate()
+	  else
+	  	-- deadupdate()
+	  	timer = 0
+	  end
  elseif scene==2 then
   gameoverupdate()
  elseif scene==3 then
-  deadupdate()
+ 	deadupdate()
  end
   tick = tick + 1
   if tick > 360 then
@@ -149,36 +152,36 @@ function gameinit()
 end
 
 function deadinit()
- scene = 3
- timer = 0
- circles = {}
+	scene = 3
+	timer = 0
+	circles = {}
 end
 
 function deadupdate()
- if #player.h > 1 then
-  -- add(circles, {x = frnd(100), frnd(100), r=frnd(20)+5, c=0})
-  -- add(circles, {x = 100, 100, r=20+5, c=0})
-  add(circles, {x = player.h[#player.h].x, y = player.h[#player.h].y, r=frnd(4)+2, c=snakepalette[#player.h%(#snakepalette)+1]})
-  delete_cnt = 1 + (flr(timer/5)*flr(timer/5)) / 8
-  for i=0,delete_cnt do
-   del(player.h,player.h[#player.h])
-  end
-  if timer % 2 == 0 then
-   sfx(0,-1,timer)
-  end
-  timer += 1
- else
-  gameoverinit()
- end
+	if #player.h > 1 then
+		-- add(circles, {x = frnd(100), frnd(100), r=frnd(20)+5, c=0})
+		-- add(circles, {x = 100, 100, r=20+5, c=0})
+		add(circles, {x = player.h[#player.h].x, y = player.h[#player.h].y, r=frnd(4)+2, c=snakepalette[#player.h%(#snakepalette)+1]})
+		delete_cnt = 1 + (flr(timer/5)*flr(timer/5)) / 8
+		for i=0,delete_cnt do
+			del(player.h,player.h[#player.h])
+		end
+		if timer % 2 == 0 then
+			sfx(0,-1,timer)
+		end
+		timer += 1
+	else
+		gameoverinit()
+	end
 end
 
 function deaddraw()
- rectfill(0,0,screenwidth, screenheight, bgcolor)
- crumbsdraw()
- playerdraw()
- for c in all(circles) do
-  circfill(c.x, c.y, c.r, c.c)
- end
+	rectfill(0,0,screenwidth, screenheight, bgcolor)
+	crumbsdraw()
+	playerdraw()
+	for c in all(circles) do
+		circfill(c.x, c.y, c.r, c.c)
+	end
 end
 
 
@@ -197,7 +200,7 @@ function gameoverinit()
  local text = 'u died fool'
  print(text,hcenter(text),vcenter(text)-20,7)
 
- finalscoredraw()
+ finalScoreDraw()
 
  local text = 'press z to try'
  print(text,hcenter(text),vcenter(text)+22,7)
@@ -272,44 +275,58 @@ function gameupdate()
  -- crumbs
  crumbsupdate()
 
-  -- timer
-  timer+=1
-  -- score
-  if tick%30==0 then
-   score+=1
-  end
+	-- timer
+	timer+=1
+	-- score
+	if tick%30==0 then
+	  score+=1
+	end
+
+	-- combo
+	if comboTimer > 0 then
+		comboTimer += 1
+		if comboTimer > COMBO_THRESHOLD then
+			comboEnd(comboNum)
+			comboNum = 0
+			comboTimer = 0
+		end
+	end
 
  if (score%12==0) then
   -- player.l += 5
  end
 end
 
+function comboEnd(num)
+	print(num, 5, 75, 11)
+end
+
 function crumbsupdate()
  local i=0
  for c in all(crumbs) do
-  if not c.deleted then
-   c.x += c.vx
-   -- bounce off either side of screen
-   if (c.x < 1) then c.x = 1 c.vx = c.vx * -0.50
-   elseif (c.x > screenwidth-1) then c.x = screenwidth-1 c.vx = c.vx * -0.50
-   end
+ 	if not c.deleted then
+	  c.x += c.vx
+	  -- bounce off either side of screen
+	  if (c.x < 1) then c.x = 1 c.vx = c.vx * -0.50
+	  elseif (c.x > screenwidth-1) then c.x = screenwidth-1 c.vx = c.vx * -0.50
+	  end
 
-   c.y += c.vy
-   -- bounce off top or bottom of screen
-   if (c.y < 11) then c.y = 11 c.vy = c.vy * -0.50
-   elseif (c.y > screenheight-1) then c.y = screenheight-1 c.vy = c.vy * -0.50
-   end
+	  c.y += c.vy
+	  -- bounce off top or bottom of screen
+	  if (c.y < 11) then c.y = 11 c.vy = c.vy * -0.50
+	  elseif (c.y > screenheight-1) then c.y = screenheight-1 c.vy = c.vy * -0.50
+	  end
 
-   c.vx *= 0.50
-   c.vy *= 0.50
-   c.tick += 1
-   if (c.tick == 450) then del(crumbs,c) end
+	  c.vx *= 0.50
+	  c.vy *= 0.50
+	  c.tick += 1
+	  if (c.tick == 450) then del(crumbs,c) end
 
-  if flr(player.x) == flr(c.x) and flr(player.y) == flr(c.y) then
-   c.deleted = true
-  end
-  i+=1
- end
+		if flr(player.x) == flr(c.x) and flr(player.y) == flr(c.y) then
+			c.deleted = true
+		end
+		i+=1
+	end
  end
 end
 
@@ -323,26 +340,41 @@ end
 -- draw functions
 function titledraw()
 
-  local titletxt = "t3h snake!!1"
-  local starttxt = "presssss z to ssssstart"
+  local titletxt = "snek dash!!1"
   rectfill(0,0,screenwidth, screenheight, 3)
-  wavyprint(titletxt, 24, 29, 5, 5)
-  wavyprint(titletxt, 25, 30, 5, 7)
+  wavyPrint(titletxt, 24, 29, 5, 5)
+  wavyPrint(titletxt, 25, 30, 5, 7)
+
+  local bx=40
+  local by=58
+  local byStr = 'BY TED MELOT'
+  print(byStr, bx-1, by-1, 5)
+  print(byStr, bx, by, 9)
+
+  local bx=11
+  local by=95
+  local startStr = "presssss z to ssssstart"
+  wavyPrintAll(startStr, bx-1, by-1, 2, 5)
+  wavyPrintAll(startStr, bx, by, 2, 6)
 end
 
-function wavyprint(s,x,y,h,c)
+function wavyPrint(s,x,y,h,c)
   for s in all(s) do
     print(s,10+x,y + h*sin((1.2*x-tick*1.4)*(3.1459/180)), c)
     x+=5
   end
 end
 
+function wavyPrintAll(s,x,y,h,c)
+  print(s,10+x,y + h*sin((1.2*x-tick*1.4)*(3.1459/180)), c)
+end
+
 function crumbsdraw()
- for c in all(crumbs) do
-  if not c.deleted then
-    pset(c.x, c.y, c.c)
-  end
- end
+	for c in all(crumbs) do
+		if not c.deleted then
+		  pset(c.x, c.y, c.c)
+		end
+	end
 end
 
 function gamedraw()
@@ -354,8 +386,9 @@ function gamedraw()
 
   -- hud
   rectfill(0,0,screenwidth, 10, 0)
-  -- message
+  -- message & combo
   messagedraw()
+  combodraw()
   -- border
   rect(0,0,screenwidth,screenheight,7)
   rect(0,0,screenwidth,11,7)
@@ -378,55 +411,69 @@ function gamedraw()
   end
 end
 
-function messageupdate(newmsg, msgtype)
- msgtimer = 0
- message = newmsg
- messagetype = msgtype or 'normal'
+function messageupdate(newMsg, msgType)
+	msgTimer = 0
+	message = newMsg
+	messageType = msgType or 'normal'
 end
 
 function messagedraw()
- if msgtimer < 60 then
-  local intensity
-  if messagetype == 'normal' then
-   intensity = 1
-  elseif messagetype == 'shake' then
-   intensity = 2
-  elseif messagetype == 'shakehard' then
-   intensity = 7
-  end
+	if msgTimer < 60 then
+		local intensity
+		if messageType == 'normal' then
+			intensity = 1
+		elseif messageType == 'shake' then
+			intensity = 2
+		elseif messageType == 'shakeHard' then
+			intensity = 7
+		end
 
-  x,y = 10,17
-  if msgtimer < shaketime then
-   if frnd(11)%2==0 then shakerangex = frnd(intensity) else shakerangex = -1*frnd(intensity) end
-   if frnd(11)%2==0 then shakerangey = frnd(intensity) else shakerangey = -1*frnd(intensity) end
-   x += shakerangex
-   y += shakerangey
-  end
-  wavyprint(message, x-15, y, 2, 8)
- end
- msgtimer += 1
+		x,y = 10,17
+		if msgTimer < shakeTime then
+			if frnd(11)%2==0 then shakeRangeX = frnd(intensity) else shakeRangeX = -1*frnd(intensity) end
+			if frnd(11)%2==0 then shakeRangeY = frnd(intensity) else shakeRangeY = -1*frnd(intensity) end
+			x += shakeRangeX
+			y += shakeRangeY
+		end
+		wavyPrint(message, x-15, y, 2, 8)
+	end
+	msgTimer += 1
+end
+
+function combodraw()
+	if comboNum > 0 then
+		print(comboNum, 50, 50, 10)
+		print(comboTimer, 50, 60, 9)
+	end
 end
 
 function eatmessage()
- msgs = {
-  'yum',
-  'delicious',
-  'deliciousioso!!',
-  'so good',
-  'mmm',
-  'tastes like chicken',
-  'woo!'
- }
- messageupdate(msgs[frnd(#msgs)], 'shake')
+	local msgs = {
+		'yum',
+		'delicious',
+		'deliciousioso!!',
+		'so good',
+		'mmm',
+		'tastes like chicken',
+		'woo!',
+		'my favorite',
+		'farm fresh',
+		'wait wut',
+		'i <3 pizza'
+	}
+	messageupdate(msgs[frnd(#msgs)+1], 'shake')
 end
 
 function dasheatmessage()
- msgs = {
-  'radical',
-  'bodacious',
-  'righteous eating'
- }
- messageupdate(msgs[frnd(#msgs)], 'shakehard')
+	local msgs = {
+		'radical',
+		'bodacious',
+		'righteous eating',
+		'omg',
+		'oooommmmgggggg',
+		'wow'
+	}
+	messageupdate(msgs[frnd(#msgs)+1], 'shakeHard')
 end
 
 function gameoverdraw()
@@ -456,27 +503,27 @@ function gameoverdraw()
     pset(xx,yy+1,cc)
    end
   end
- finalscoredraw()
+ finalScoreDraw()
  end
 
- -- continue overlay
- rectfill(0,screenheight-pad,screenwidth,screenheight,9)
- if btn(4) then
-  print('z',20,screenheight-pad+1,5)
- elseif btn(5) then
-  print('x',60,screenheight-pad+1,5)
- end
+ -- -- continue overlay
+ -- rectfill(0,screenheight-pad,screenwidth,screenheight,9)
+ -- if btn(4) then
+ --  print('z',20,screenheight-pad+1,5)
+ -- elseif btn(5) then
+ --  print('x',60,screenheight-pad+1,5)
+ -- end
 end
 
-function finalscoredraw()
- local text = ''..score
- x1 = 28
- x2 = 100
- y1 = 60
- y2 = 66
- rectfill(x1,y1,x2,y2,8)
- rect(x1,y1-1,x2,y2+1,3)
- print(text,hcenter(text),vcenter(text)-0,11)
+function finalScoreDraw()
+	local text = ''..score
+	x1 = 28
+	x2 = 100
+	y1 = 60
+	y2 = 66
+	rectfill(x1,y1,x2,y2,8)
+	rect(x1,y1-1,x2,y2+1,3)
+	print(text,hcenter(text),vcenter(text)-0,11)
 end
 
 -- handle button inputs
@@ -538,11 +585,11 @@ end
 
 -- draw player sprite
 function playerdraw()
- if not player.dead then
+	if not player.dead then
   -- head (current pos)
   pset(player.x,player.y,11)
   -- spr(0, player.x, player.y)
- end
+	end
 
   -- tail
   local i = 1
@@ -577,9 +624,9 @@ function spawncrumbs(x,y,d)
  local friction = 0.20
  local colors
  if frnd(2) == 0 then
-  colors = {1,2}
+	 colors = {1,2}
  else
-  colors = {4,2}
+	 colors = {4,2}
  end
  local sign1 = 1
  local vx = 0
@@ -622,10 +669,19 @@ function collectfood(foodlist, food)
  player.l += 20
  spawnfood(1)
  eatmessage()
+
+ -- start combo timer
+ if comboTimer == 0 then
+ 	comboNum = 1
+ 	comboTimer = 1
+ elseif comboTimer < COMBO_THRESHOLD then
+ 	comboNum += 1
+ 	comboTimer = 1
+ end
 end
 
-function collectfoodextrapoints(p)
- score += p
+function collectfoodExtraPoints(p)
+	score += p
 end
 
 -- collects food if pos collides with any food
@@ -633,7 +689,7 @@ function dashfoodcollect(food,pos)
  for f in all(food) do
   if (iscolliding({x=pos.x,y=pos.y,w=1,h=1},{x=f.x,y=f.y,w=4,h=4})) then
    collectfood(food,f)
-   collectfoodextrapoints(500)
+   collectfoodExtraPoints(500)
    dasheatmessage()
   end
  end
