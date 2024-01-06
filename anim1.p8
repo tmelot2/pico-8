@@ -13,6 +13,8 @@ ballSpawner={ x = screenwidth/2, y = screenheight-10, on = false }
 function _init()
 	balls = {}
 	starfield = {}
+	cx = 0
+	cy = 0
 	initStarfield()
 end
 
@@ -26,6 +28,7 @@ function _update60()
 	updateBalls()
 	updateBallSpawner()
 	updateStarfield()
+	updateBurst()
 end
 
 function _draw()
@@ -33,6 +36,7 @@ function _draw()
 	drawStarfield()
 	drawBalls()
 	drawHud()
+	-- drawBurst()
 end
 
 
@@ -61,6 +65,7 @@ end
 function drawHud()
 	print('balls: ' .. #balls, 1, 1, 7)
 	print('stars: ' .. #starfield, 1, 7, 7)
+	print('fps: ' .. stat(7), 1, 14, 7)
 
 	-- reticle
 	if btn(4) then c=6 size=6 else c=5 size=4 end
@@ -103,10 +108,11 @@ end
 function updateStarfield()
 	-- spawn to limit
 	STAR_LIMIT = 100
+	more = 0 
 	if #starfield < STAR_LIMIT then
 		more = STAR_LIMIT - #starfield +1
 	end
-	for i=1,flr(rnd(3)) do
+	for i=1,more do
 		add(starfield, newStar())
 	end
 
@@ -212,6 +218,23 @@ function updateBallSpawner()
 	if ballSpawner.y < 0 then ballSpawner.y = 0 end
 	-- v down
 	if ballSpawner.y > screenheight then ballSpawner.y = screenheight end
+end
+
+-- burst
+burstTimer = 0
+function updateBurst()
+	burstTimer += 1
+end
+
+function drawBurst()
+	cx = screenwidth/2
+	cy = screenheight/2
+	l = 8
+	c = {8}
+	cc = c[1]
+	for i=0,l do
+		circ(cx+16*cos(i/l+(0.05*burstTimer/8)), cy+16*sin(i/l+(0.05*burstTimer/8)), 5+20*cos(burstTimer/128), cc)
+	end
 end
 
 __gfx__
