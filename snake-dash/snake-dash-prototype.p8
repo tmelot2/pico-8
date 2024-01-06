@@ -52,10 +52,10 @@ snakepalettes = {
  snakorpion = {10,10,10,10,10,10,10,10,0,0},
  rainbow = {7,7,14,14,8,8,9,9,10,10,11,11,3,3,12,12,2,2}
 }
-snakepalette = snakepalettes.texascoralsnake
-snakepalette = snakepalettes.snakorpion
 snakepalette = snakepalettes.snakezero
 snakepalette = snakepalettes.rainbow
+snakepalette = snakepalettes.snakorpion
+snakepalette = snakepalettes.texascoralsnake
 
 -- food sprites
 foodsprites = {1,2,17}
@@ -133,10 +133,10 @@ function gameinit()
  player.y = screenheight/2
  player.width = 7
  player.height = 7
- player.dir = flr(rnd(4))+1
+ player.dir = frnd((4))+1
  player.c = 8
  player.h = {}
- player.l = 20
+ player.l = 200
  player.dead = false
  scene = 1
   timer = 0
@@ -155,6 +155,7 @@ function deadinit()
 	scene = 3
 	timer = 0
 	circles = {}
+	pauseTimer = 0
 end
 
 function deadupdate()
@@ -171,17 +172,31 @@ function deadupdate()
 		end
 		timer += 1
 	else
-		gameoverinit()
+		pauseTimer += 1
+		if pauseTimer > 80 then
+			gameoverinit()
+		end
 	end
 end
 
 function deaddraw()
-	rectfill(0,0,screenwidth, screenheight, bgcolor)
 	crumbsdraw()
 	playerdraw()
+	len = 20
 	for c in all(circles) do
 		circfill(c.x, c.y, c.r, c.c)
+		for i=0,frnd(3) do
+			nx = rndneg()*2+c.r + flr(rnd(len)*cos(rnd(1)))
+			ny = rndneg()*2+c.r + flr(rnd(len)*sin(rnd(1)))
+			bigger = flr(rnd(10)) > 7
+			if bigger then size = 2 else size = 1 end
+			circfill(c.x+nx, c.y+ny, size, c.c)
+			if flr(rnd(10) > 8) then
+				line(c.x-0.1*nx, c.y-0.1*ny, c.x+nx,c.y+ny, c.c)
+			end
+		end
 	end
+	circles={}
 end
 
 
@@ -733,6 +748,14 @@ end
 -- shorthand for flr(rnd(x))
 function frnd(x)
  return flr(rnd(x))
+end
+
+function rndneg()
+	if flr(rnd(2)) == 0 then
+		return 1
+	else
+		return -1
+	end
 end
 
 __gfx__
