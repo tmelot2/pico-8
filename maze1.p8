@@ -12,6 +12,7 @@ maze={}
 t=0
 
 p={}
+anim={}
 
 -- main
 function _init()
@@ -20,6 +21,38 @@ function _init()
 	p=initplayer()
 end
 
+function _update60()	
+	t+=1
+	input()
+	animate()
+	updateplayer()
+end
+
+function _draw()
+	cls(0)
+
+	-- maze
+	for ix,x in ipairs(maze) do
+		for iy,y in ipairs(x) do
+			if y==true then
+				sspr(8,0, 4,4, TILE_SIZE*(ix-1),TILE_SIZE*(iy-1))
+			end
+		end
+	end
+
+	-- player
+	-- sspr(8,8, 4,4, TILE_SIZE*(p.mx-1),TILE_SIZE*(p.my-1))
+	sspr(8,8, 4,4, p.x,p.y)
+	adddebug('p.mx '..p.mx)
+	adddebug('p.my '..p.my)
+	adddebug('p.x '..p.x)
+	adddebug('p.y '..p.y)
+
+	drawdebug()
+end
+
+
+-- maze
 function initmaze()
 	m={}
 	for x=1,MAZE_SIZE do
@@ -31,7 +64,7 @@ function initmaze()
 			-- middle
 			else
 				wall=false
-				if frnd(20)<10 then wall=true end
+				if frnd(100)<30 then wall=true end
 			end
 			m[x][y] = wall
 		end
@@ -39,52 +72,87 @@ function initmaze()
 	return m
 end
 
-function initplayer()
-return {
-	mx=frnd(20), my=frnd(20),
-	x=0,y=0,
-	anim={}
-}
-end
 
-function _update60()	
-	t+=1
-	input()
-	updateplayer()
+-- player
+function initplayer()
+	mx=frnd(20)
+	my=frnd(20)
+	return {
+		mx=mx, my=my,
+		x=TILE_SIZE*(mx-1),y=TILE_SIZE*(my-1)
+	}
 end
 
 function updateplayer()
 end
 
 function moveplayer(mazex, mazey)
+	dur=4
 	if getmazewall(mazex,mazey) == false then 
+		sx = TILE_SIZE*(p.mx-1)
+		sy = TILE_SIZE*(p.my-1)
+
 		p.mx=mazex
 		p.my=mazey
+		a={
+			obj=p, prop='x',
+			s=sx, e=TILE_SIZE*(p.mx-1),
+			t=0, d=dur
+		}
+		add(anim,a)
+		a={
+			obj=p, prop='y',
+			s=sy, e=TILE_SIZE*(p.my-1),
+			t=0, d=dur
+		}
+		add(anim,a)
 	end
 end
 
-function _draw()
-	cls(0)
 
-	-- maze
-	for ix,x in ipairs(maze) do
-		for iy,y in ipairs(x) do
-			if y==true then
-				-- spr(2, TILE_SIZE*(ix-1), TILE_SIZE*(iy-1), TILE_SIZE/8,TILE_SIZE/8)
-				sspr(8,0, 4,4, TILE_SIZE*(ix-1),TILE_SIZE*(iy-1))
-			end
+-- animation
+function animate()
+	for a in all(anim) do
+		if a.t>=a.d then
+			del(anim,a)
 		end
+		percent = a.t/a.d
+		val = a.s + percent*(a.e-a.s)
+		a.obj[a.prop] = val
+
+		a.t+=1
 	end
-
-	-- player
-	sspr(8,8, 4,4, TILE_SIZE*(p.mx-1),TILE_SIZE*(p.my-1))
-	-- sspr(8,8, 4,4, p.x,p.y)
-	adddebug('p.mx '..p.mx)
-	adddebug('p.my '..p.my)
-
-	drawdebug()
 end
 
+
+-- input
+function input()
+	if btnp(0) then
+		moveplayer(p.mx-1, p.my)
+	end
+	if btnp(1) then
+		moveplayer(p.mx+1, p.my)
+	end
+	if btnp(2) then
+		moveplayer(p.mx, p.my-1)
+	end
+	if btnp(3) then
+		moveplayer(p.mx, p.my+1)
+	end
+
+	if btn(4) then
+		nx = frnd(20+10)+1
+		ny = frnd(20+10)+1
+		moveplayer(nx,ny)
+	end
+
+	if btnp(5) then maze=initmaze() end
+
+	c = maze[p.mx][p.my]
+end
+
+
+-- util
 function frnd(x)
 	return flr(rnd(x))
 end
@@ -117,33 +185,6 @@ end
 function easequarticout(t)
 	return 1 - (1-t)^4
 end
-
--- input
-function input()
-	if btnp(0) then
-		moveplayer(p.mx-1, p.my)
-	end
-	if btnp(1) then
-		moveplayer(p.mx+1, p.my)
-	end
-	if btnp(2) then
-		moveplayer(p.mx, p.my-1)
-	end
-	if btnp(3) then
-		moveplayer(p.mx, p.my+1)
-	end
-
-	if btn(4) then
-		p.mx = frnd(20+10)+1
-		p.my = frnd(20+10)+1
-	end
-
-	if btnp(5) then maze=initmaze() end
-
-	c = maze[p.mx][p.my]
-	if c==true then adddebug('c '..tostring(c)) end
-end
-
 
 __gfx__
 00000000222122221221122118810000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
