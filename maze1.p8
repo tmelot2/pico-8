@@ -87,10 +87,17 @@ function updateplayer()
 end
 
 function moveplayer(mazex, mazey)
-	dur=4
+	dur=7
 	if getmazewall(mazex,mazey) == false then 
-		sx = TILE_SIZE*(p.mx-1)
-		sy = TILE_SIZE*(p.my-1)
+		sx=p.x
+		sy=p.y
+
+		-- delete existing animation
+		for a in all(anim) do
+			if a.obj == p then
+				del(anim,a)
+			end
+		end
 
 		p.mx=mazex
 		p.my=mazey
@@ -117,7 +124,8 @@ function animate()
 			del(anim,a)
 		end
 		percent = a.t/a.d
-		val = a.s + percent*(a.e-a.s)
+		-- val = a.s + percent*(a.e-a.s)
+		val = ease(percent, a.s, round(a.e-a.s), easecubicout)
 		a.obj[a.prop] = val
 
 		a.t+=1
@@ -153,6 +161,14 @@ end
 
 
 -- util
+function round(x)
+	if ceil(x)-x >= 0.5 then
+		return ceil(x)
+	else
+		return flr(x)
+	end
+end
+
 function frnd(x)
 	return flr(rnd(x))
 end
@@ -181,9 +197,18 @@ end
 function ease(percent,s,e,f)
 	return s + (e)*f(percent)
 end
-
+function easelinear(t)
+	return t
+end
+function easecubicout(t)
+	return 1 - (1-t)^3
+end
 function easequarticout(t)
 	return 1 - (1-t)^4
+end
+function easeexpout(t)
+	if t==1 then return 1 end
+	return 1 - 2^(-10*t)
 end
 
 __gfx__
