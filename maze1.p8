@@ -89,6 +89,13 @@ function frnd(x)
 	return flr(rnd(x))
 end
 
+-- 1 based
+function getmazewall(x,y)
+	print('getmazewall '..x..' '..y)
+	if x<=1 or x>=MAZE_SIZE or y<=1 or y>=MAZE_SIZE then return true end
+	return maze[x][y]
+end
+
 dbg={}
 function drawdebug()
 	local i=0
@@ -100,13 +107,6 @@ function drawdebug()
 end
 function adddebug(d)
 	dbg[#dbg+1] = d
-end
-
--- 1 based
-function getmazewall(x,y)
-	print('getmazewall '..x..' '..y)
-	if x<=1 or x>=MAZE_SIZE or y<=1 or y>=MAZE_SIZE then return true end
-	return maze[x][y]
 end
 
 -- percent, start, end (offset from start), ease func
@@ -143,7 +143,6 @@ function input()
 	c = maze[p.mx][p.my]
 	if c==true then adddebug('c '..tostring(c)) end
 end
-
 
 
 __gfx__
