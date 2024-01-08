@@ -3,7 +3,7 @@ version 41
 __lua__
 
 -- main
-
+function _init()
 	t=0
 	started = false
 end

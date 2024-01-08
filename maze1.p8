@@ -19,6 +19,9 @@ function _init()
 	t=0
 	maze=initmaze()
 	p=initplayer()
+
+	-- set key delay
+	poke(0x5f5c, 10)
 end
 
 function _update60()	
@@ -26,6 +29,7 @@ function _update60()
 	input()
 	animate()
 	updateplayer()
+	adddebug('#anim '..#anim)
 end
 
 function _draw()
@@ -41,12 +45,11 @@ function _draw()
 	end
 
 	-- player
-	-- sspr(8,8, 4,4, TILE_SIZE*(p.mx-1),TILE_SIZE*(p.my-1))
 	sspr(8,8, 4,4, p.x,p.y)
-	adddebug('p.mx '..p.mx)
-	adddebug('p.my '..p.my)
-	adddebug('p.x '..p.x)
-	adddebug('p.y '..p.y)
+	-- adddebug('p.mx '..p.mx)
+	-- adddebug('p.my '..p.my)
+	-- adddebug('p.x '..p.x)
+	-- adddebug('p.y '..p.y)
 
 	drawdebug()
 end
@@ -63,12 +66,50 @@ function initmaze()
 				wall=true 
 			-- middle
 			else
-				wall=false
-				if frnd(100)<30 then wall=true end
+				wall=true
+				-- if frnd(100)<10 then wall=true end
 			end
 			m[x][y] = wall
 		end
 	end
+
+	-- carve hallways
+	for carves=1,frnd(15)+20 do
+		-- horizontal
+		x=frnd(MAZE_SIZE-1)+2
+		y=frnd(MAZE_SIZE-1)+2
+		l=frnd(15)+5
+		if x+l > MAZE_SIZE-1 then l=MAZE_SIZE-x-2 end
+		if x<1 then x=1 end
+		for i=1,l do
+			m[x+i][y]=false
+		end
+		
+		-- vertical
+		x=frnd(MAZE_SIZE-1)+2
+		y=frnd(MAZE_SIZE-1)+2
+		l=frnd(15)+5
+		if y+l > MAZE_SIZE-1 then l=MAZE_SIZE-y-2 end
+		if y<1 then y=1 end
+		for i=1,l do
+			m[x][y+i]=false
+		end
+	end
+
+	-- carve random tiles
+	for tiles=1,frnd(60)+15 do
+		x=frnd(MAZE_SIZE-1)+1
+		y=frnd(MAZE_SIZE-1)+1
+		wall=m[x][y]
+		while wall==false do
+			printh('WALL ALREADY MISSING, RE RANDOMIZING', 'log')
+			x=frnd(MAZE_SIZE-1)+1
+			y=frnd(MAZE_SIZE-1)+1
+			wall=m[x][y]
+		end
+		m[x][y]=false
+	end
+
 	return m
 end
 
@@ -87,47 +128,75 @@ function updateplayer()
 end
 
 function moveplayer(mazex, mazey)
-	dur=7
+	dur=8
 	if getmazewall(mazex,mazey) == false then 
 		sx=p.x
 		sy=p.y
 
-		-- delete existing animation
-		for a in all(anim) do
-			if a.obj == p then
-				del(anim,a)
-			end
-		end
-
 		p.mx=mazex
 		p.my=mazey
-		a={
-			obj=p, prop='x',
-			s=sx, e=TILE_SIZE*(p.mx-1),
-			t=0, d=dur
-		}
-		add(anim,a)
-		a={
-			obj=p, prop='y',
-			s=sy, e=TILE_SIZE*(p.my-1),
-			t=0, d=dur
-		}
-		add(anim,a)
+
+		ax=newAnimation(
+			'player.x',
+			p, 'x',
+			sx, TILE_SIZE*(p.mx-1),
+			0, dur,
+			easequarticout
+		)
+		ay=newAnimation(
+			'player.y',
+			p, 'y',
+			sy, TILE_SIZE*(p.my-1),
+			0, dur,
+			easequarticout
+		)
+		add(anim,ax)
+		add(anim,ay)
 	end
 end
 
 
 -- animation
+-- id, object, prop, start val, end val, time, duration, easing func
+function newAnimation(id,o,prop,s,e,t,d,f)
+	-- if anim exists, start from current place, reset timer
+	a=getAnimation(id)
+	if a ~= nil then
+		a.s=o[prop]
+		a.e=e
+		a.t=0
+		a.d=d
+		a.f=f
+	else
+		a={
+			id=id,
+			obj=o, prop=prop,
+			s=s, e=e,
+			t=0, d=dur,
+			f=f
+		}
+		add(anim,a)
+	end
+end
+
+function getAnimation(id)
+	for i,a in ipairs(anim) do
+		if a.id == id then
+			return anim[i]
+		end
+	end
+	return nil
+end
+
+
 function animate()
 	for a in all(anim) do
 		if a.t>=a.d then
 			del(anim,a)
 		end
 		percent = a.t/a.d
-		-- val = a.s + percent*(a.e-a.s)
-		val = ease(percent, a.s, round(a.e-a.s), easecubicout)
+		val = ease(percent, a.s, round(a.e-a.s), a.f)
 		a.obj[a.prop] = val
-
 		a.t+=1
 	end
 end
@@ -148,13 +217,13 @@ function input()
 		moveplayer(p.mx, p.my+1)
 	end
 
-	if btn(4) then
+	if btnp(4) then
 		nx = frnd(20+10)+1
 		ny = frnd(20+10)+1
 		moveplayer(nx,ny)
 	end
 
-	if btnp(5) then maze=initmaze() end
+	if btn(5) then maze=initmaze() end
 
 	c = maze[p.mx][p.my]
 end
@@ -212,14 +281,14 @@ function easeexpout(t)
 end
 
 __gfx__
-00000000222122221221122118810000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000222122222882299282280000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700222122222882299282280000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000111011111221122118810000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000212222221441133100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700212222224aa43bb300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000212222224aa43bb300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000111111111441133100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000222122221221122118810000111112210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000222122222882299282280000122112210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00700700222122222882299282280000122112210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00077000111011111221122118810000122111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00077000212222221441133100000000111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00700700212222224aa43bb300000000122212210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000212222224aa43bb300000000122212210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000111111111441133100000000111112210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000aaaa00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000abba00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000abba00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
