@@ -11,8 +11,12 @@ TILE_SIZE=4
 maze={}
 t=0
 
+-- player
 p={}
-ps={}
+-- player trail
+pt={}
+
+-- animation system
 anim={}
 
 logfile='log.txt'
@@ -57,6 +61,32 @@ function initmaze()
 		end
 	end
 
+	initmaze_wizard(m)
+
+	-- add perimeter
+	for x=1,MAZE_SIZE do
+		for y=1,MAZE_SIZE do
+			if x==1 or x==MAZE_SIZE then m[x][y]=true end
+			if y==1 or y==MAZE_SIZE then m[x][y]=true end
+		end
+	end
+
+	-- fullness
+	tot=MAZE_SIZE*MAZE_SIZE
+	filled=0
+	for x=1,MAZE_SIZE do
+		for y=1,MAZE_SIZE do
+			if m[x][y] then filled+=1 end
+		end
+	end
+	printh('maze filled '..flr(100*(filled/tot))..'%',logfile)
+
+	-- todo: add start, exit
+
+	return m
+end
+
+function initmaze_wizard(m)
 	-- carve hallways
 	-- todo: replace with sloped lines
 	for carves=1,frnd(15)+20 do
@@ -101,27 +131,6 @@ function initmaze()
 		end
 	end
 	printh('removed '..removed,logfile)
-
-	-- add perimeter
-	for x=1,MAZE_SIZE do
-		for y=1,MAZE_SIZE do
-			if x==1 or x==MAZE_SIZE then m[x][y]=true end
-			if y==1 or y==MAZE_SIZE then m[x][y]=true end
-		end
-	end
-
-	-- fullness
-	tot=MAZE_SIZE*MAZE_SIZE
-	filled=0
-	for x=1,MAZE_SIZE do
-		for y=1,MAZE_SIZE do
-			if m[x][y] then filled+=1 end
-		end
-	end
-	printh('maze filled '..flr(100*(filled/tot))..'%',logfile)
-
-	-- todo: add start, exit
-
 	return m
 end
 
@@ -160,26 +169,22 @@ end
 
 function updateplayertrail()
 	if getAnimation('player.x') then
-		add(ps,{x=p.x+1, y=p.y+1, t=0})
+		add(pt,{x=p.x+1, y=p.y+1, t=frnd(50)})
 	end
-	adddebug('#trail '..#ps)
+	adddebug('#trail '..#pt)
 end
 
 function drawplayer()
 	drawplayertrail()
 	sspr(p.sx,p.sy, 4,4, p.x,p.y)
-	-- adddebug('p.mx '..p.mx)
-	-- adddebug('p.my '..p.my)
-	-- adddebug('p.x '..p.x)
-	-- adddebug('p.y '..p.y)
 end
 
 function drawplayertrail()
-	pdur=150
-	for par in all(ps) do
-		par.t+=frnd(3)
+	pdur=250
+	for par in all(pt) do
+		par.t+=frnd(2)
 		if par.t>pdur then
-			del(ps,par)
+			del(pt,par)
 		else
 			-- fade
 			pal={8,2,1}
