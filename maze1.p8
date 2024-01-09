@@ -12,6 +12,7 @@ maze={}
 t=0
 
 p={}
+ps={}
 anim={}
 
 logfile='log.txt'
@@ -154,14 +155,53 @@ function initplayer()
 end
 
 function updateplayer()
+	updateplayertrail()
+end
+
+function updateplayertrail()
+	if getAnimation('player.x') then
+		add(ps,{x=p.x+1, y=p.y+1, t=0})
+	end
+	adddebug('#trail '..#ps)
 end
 
 function drawplayer()
+	drawplayertrail()
 	sspr(p.sx,p.sy, 4,4, p.x,p.y)
 	-- adddebug('p.mx '..p.mx)
 	-- adddebug('p.my '..p.my)
 	-- adddebug('p.x '..p.x)
 	-- adddebug('p.y '..p.y)
+end
+
+function drawplayertrail()
+	pdur=150
+	for par in all(ps) do
+		par.t+=frnd(3)
+		if par.t>pdur then
+			del(ps,par)
+		else
+			-- fade
+			pal={8,2,1}
+			-- pal={11,10,9}
+			if pdur-par.t>0.5*pdur then 
+				pc=pal[1]
+			elseif pdur-par.t<0.5*pdur and pdur-par.t>0.2*pdur then 
+				pc=pal[2]
+			elseif pdur-par.t<0.2*pdur then 
+				pc=pal[3]
+			end
+			-- drift
+			-- todo: should move to update
+			if frnd(400)==0 then
+				if frnd(2)%2==0 then px=frnd(1)+1 else px=-(frnd(1)+1) end
+				if frnd(2)%2==0 then py=frnd(1)+1 else py=-(frnd(1)+1) end
+				par.x+=px
+				par.y+=py
+			end
+			pset(par.x, par.y, pc)
+		end
+	end
 end
 
 function moveplayer(mazex, mazey)
@@ -237,7 +277,6 @@ function getAnimation(id)
 	return nil
 end
 
-
 function animate()
 	for a in all(anim) do
 		if a.t>=a.d then
@@ -282,6 +321,10 @@ end
 
 
 -- autil
+function log(s)
+	printh(s,logfile)
+end
+
 function round(x)
 	if ceil(x)-x >= 0.5 then
 		return ceil(x)
