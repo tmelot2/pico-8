@@ -9,7 +9,7 @@ MAZE_SIZE=32
 TILE_SIZE=4
 
 maze={}
-t=0
+solution=nil
 
 -- player
 p={}
@@ -17,18 +17,20 @@ p={}
 pt={}
 
 -- animation system
+t=0
 anim={}
 
 logfile='log.txt'
 
 -- main
 function _init()
+	srand(1)
 	t=0
 	maze=initmaze()
 	p=initplayer()
 
 	-- set key delay
-	poke(0x5f5c, 20)
+	poke(0x5f5c, 2)
 end
 
 function _update60()	
@@ -36,7 +38,8 @@ function _update60()
 	input()
 	animate()
 	updateplayer()
-	adddebug('fps '..stat(7))
+	-- camera(p.x-64,p.y-64)
+	-- adddebug('fps '..stat(7))
 end
 
 function _draw()
@@ -56,12 +59,14 @@ function initmaze()
 		m[x] = {}
 		for y=1,MAZE_SIZE do
 			wall=true 
-			if frnd(100)<5 then wall=false end
+			-- if frnd(100)<5 then wall=false end
 			m[x][y] = wall
 		end
 	end
 
-	initmaze_wizard(m)
+	-- initmaze_portal_sorcerer(m)
+	initmaze_dfs(m)
+	-- initmaze_windy(m)
 
 	-- add perimeter
 	for x=1,MAZE_SIZE do
@@ -86,7 +91,90 @@ function initmaze()
 	return m
 end
 
-function initmaze_wizard(m)
+function initmaze_windy(m)
+	for x=1,MAZE_SIZE,2 do
+		for y=1,MAZE_SIZE,2 do
+			if frnd(2)%2==0 then
+				m[x][y]=false
+				m[x+1][y]=false
+				m[x][y+1]=false
+			end
+		end
+	end
+	return m
+end
+
+function initmaze_dfs(m)
+	log('')
+	log('start!')
+	extra_carve=0
+	seen={}
+	-- visit={{x=frnd(MAZE_SIZE)+1, y=frnd(MAZE_SIZE)+1}}
+	visit={{x=2, y=2}}
+	while #visit>0 do
+		-- pop
+		cur=visit[1]
+		-- del(visit,cur) 
+
+		m[cur.x][cur.y]=false
+
+		-- seen
+		k=getkey(cur.x,cur.y)
+		seen[k]=true
+
+		dir=frnd(3)
+		i=0
+		has_unvisited=false
+		repeat
+			dir=(dir+1)%4
+			log(dir)
+			-- u
+			if dir==0 then
+				newp={x=cur.x, y=cur.y-2}
+				halfp={x=cur.x, y=cur.y-1}
+			-- d
+			elseif dir==1 then
+				newp={x=cur.x, y=cur.y+2}
+				halfp={x=cur.x, y=cur.y+1}
+			-- l
+			elseif dir==2 then
+				newp={x=cur.x-2, y=cur.y}
+				halfp={x=cur.x-1, y=cur.y}
+			-- r
+			elseif dir==3 then
+				newp={x=cur.x+2, y=cur.y}
+				halfp={x=cur.x+1, y=cur.y}
+			end
+
+			--new point seen with chance to carve into already seen path
+			s=seen[getkey(newp.x,newp.y)]
+			if s==true and extra_carve<3 then
+				if rnd(100)<0.5 then
+					s=false
+					extra_carve+=1
+				end
+			end
+
+			if inmazebounds(newp) and s!=true then
+				has_unvisited=true
+				m[halfp.x][halfp.y]=false
+				add(visit,newp,1)
+			end
+
+			i+=1
+		until has_unvisited==true or i==3
+
+		if has_unvisited==false then 
+			del(visit,cur)
+		end
+	end
+	
+	log('ec '..extra_carve)
+	log('done!')
+	return m
+end
+
+function initmaze_portal_sorcerer(m)
 	-- carve hallways
 	-- todo: replace with sloped lines
 	for carves=1,frnd(15)+20 do
@@ -134,6 +222,14 @@ function initmaze_wizard(m)
 	return m
 end
 
+function inmazebounds(p)
+	if p.x>0 and p.x<MAZE_SIZE and p.y>0 and p.y<MAZE_SIZE then
+		return true
+	else
+		return false
+	end
+end
+
 function drawmaze()
 	for ix,x in ipairs(maze) do
 		for iy,y in ipairs(x) do
@@ -146,9 +242,37 @@ end
 
 -- 1 based
 function getmazewall(x,y)
-	print('getmazewall '..x..' '..y)
 	if x<1 or x>MAZE_SIZE or y<1 or y>MAZE_SIZE then return true end
 	return maze[x][y]
+end
+
+function solvemaze()
+	-- bfs
+	result={}
+	seen={}
+	start={x=1,y=1}
+	finish={x=31,y=31}
+	visit={start}
+	
+	while #visit>0 do
+		cur=visit[1]
+
+		-- u
+		newp={cur.x,cur.y-2}
+		if inmazebounds(newp) then add(visit,newp) end
+		-- d
+		newp={cur.x,cur.y+2}
+		if inmazebounds(newp) then add(visit,newp) end
+		-- l
+		newp={cur.x-2,cur.y}
+		if inmazebounds(newp) then add(visit,newp) end
+		-- r
+		newp={cur.x+2,cur.y}
+		if inmazebounds(newp) then add(visit,newp) end
+		
+	end
+
+	return result
 end
 
 
@@ -171,7 +295,6 @@ function updateplayertrail()
 	if getAnimation('player.x') then
 		add(pt,{x=p.x+1, y=p.y+1, t=frnd(50)})
 	end
-	adddebug('#trail '..#pt)
 end
 
 function drawplayer()
@@ -180,7 +303,7 @@ function drawplayer()
 end
 
 function drawplayertrail()
-	pdur=250
+	pdur=150
 	for par in all(pt) do
 		par.t+=frnd(2)
 		if par.t>pdur then
@@ -209,8 +332,16 @@ function drawplayertrail()
 	end
 end
 
+function moveplayertorandom()
+	repeat
+		nx = frnd(20+10)+1
+		ny = frnd(20+10)+1
+		didmove=moveplayer(nx,ny)
+	until didmove==true
+end
+
 function moveplayer(mazex, mazey)
-	dur=5
+	dur=4
 	if getmazewall(mazex,mazey) == false then 
 		p.mx=mazex
 		p.my=mazey
@@ -313,19 +444,35 @@ function input()
 		moveplayer(p.mx, p.my+1)
 	end
 
+	-- z
 	if btnp(4) then
-		repeat
-			nx = frnd(20+10)+1
-			ny = frnd(20+10)+1
-			didmove=moveplayer(nx,ny)
-		until didmove==true
+		-- moveplayertorandom()
+		solution=solvemaze()
 	end
 
+	-- x
 	if btn(5) then maze=initmaze() end
 end
 
 
 -- autil
+function listtostr(l)
+	if #l==0 then return '' end
+	r=''
+	for i in all(l) do
+		if r=='' then
+			r=i
+		else
+			r=''..r..','..i
+		end
+	end
+	return r
+end
+
+function getkey(x,y)
+	return x..','..y
+end
+
 function log(s)
 	printh(s,logfile)
 end
@@ -374,14 +521,14 @@ function easeexpout(t)
 end
 
 __gfx__
-00000000222122311221122118810000111112210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000222123212882299282280000122112210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700222132312882299282280000122112210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000111011101221122118810000122111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000212222221441133100000000111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700212222224aa43bb300000000122212210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000212222224aa43bb300000000122212210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000111111111441133100000000111112210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000666515511221122118810000111112210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000666551152882299282280000122112210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00700700666551152882299282280000122112210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00077000555115511221122118810000122111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00077000000000001441133100000000111111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00700700000000004aa43bb300000000122212210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000004aa43bb300000000122212210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000001441133100000000111112210000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000aaaacccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000abbaceec0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000abbaceec0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

@@ -8,7 +8,7 @@ __lua__
 -- tmelot
 
 -- debug
-skiptitle=0
+skiptitle=1
 -- screen
 screenwidth = 127
 screenheight = 127
@@ -38,7 +38,7 @@ food={}
 timer = 0
 score = 0
 dashamount = 20
-dashframes = 10
+dashframes = 20
 comboNum = 0
 comboTimer = 0
 COMBO_THRESHOLD = 60
@@ -249,6 +249,7 @@ function gameupdate()
  if (player.dashframe > 0) then
    if (player.dashframe > dashframes) then
     player.dashframe = 0
+    add(shine,{id='dash_recharge', x=player.x-3, y=player.y-3, tick=0})
    else
     player.dashframe += 1
    end
@@ -409,7 +410,6 @@ function gamedraw()
   rect(0,0,screenwidth,11,7)
   -- text
   print("score: " .. score, 4, 4, 7)
-  print("dash: " .. player.dashframe, screenwidth-36, 4, 7)
 
   playerdraw()
 
@@ -457,8 +457,50 @@ end
 
 function combodraw()
 	if comboNum > 0 then
-		print(comboNum, 50, 50, 10)
-		print(comboTimer, 50, 60, 9)
+		print('combo: '..comboNum, 60, 4, 10)
+		combobardraw(96, 3, 25)
+	end
+end
+
+function combobardraw(x,y,w)
+	h=5
+	percent=comboTimer/COMBO_THRESHOLD
+
+	if percent<0.04 then
+		h+=2
+		y-=1
+	else
+		lh=5
+	end
+
+	-- outline
+	rectfill(x, y, x+w, y+h, 7)
+	-- bg
+	rectfill(x+1, y+1, x+w-1, y+h-1, 1)
+	rectfill(x+1, y+1, x+w-1, y+h-1, 0)
+	-- progress
+	if percent<0.40 then
+		c=11
+	elseif percent<0.75 then
+		c=9
+	elseif percent<0.85 then
+		c=2
+	elseif percent<0.95 then
+		c=1
+	end
+	rectfill(x+1, y+1, x+(1-percent)*w+1, y+h-1, c)
+
+	if percent<0.05 then
+		lh=6
+	else
+		lh=2
+	end
+	line(x+(1-percent)*w+1, y-(lh/2), x+(1-percent)*w+1, y+h+(lh/2), 14)
+
+	-- start flash
+	if percent<0.05 then
+		c=11
+		rectfill(x,y,x+w,y+h,10)
 	end
 end
 
