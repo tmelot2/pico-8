@@ -60,10 +60,10 @@ snakepalettes = {
  snakorpion = {10,10,10,10,10,10,10,10,0,0},
  rainbow = {7,7,14,14,8,8,9,9,10,10,11,11,3,3,12,12,2,2}
 }
+snakepalette = snakepalettes.texascoralsnake
+snakepalette = snakepalettes.snakorpion
 snakepalette = snakepalettes.snakezero
 snakepalette = snakepalettes.rainbow
-snakepalette = snakepalettes.snakorpion
-snakepalette = snakepalettes.texascoralsnake
 
 -- food sprites
 foodsprites = {1,2,17}
@@ -276,16 +276,9 @@ function gameupdate()
  end
 
   -- collisions
-  log('player '..flr(player.x)..','..flr(player.y)..'')
   pc={x=player.x/8, y=((player.y-2)/8)-1}
-  addDebug(pc.x..','..pc.y)
-  log('cell '..pc.x..','..pc.y..'')
   mc=mget(pc.x, pc.y)
-  log('mc '..mc)
-  log('')
-  -- log('mc '..mc)
   f=fget(mc)
-  -- log('f '..f)
 
   dead=false
   -- hit a wall
@@ -447,7 +440,7 @@ function gamedraw()
   messagedraw()
   combodraw()
   -- border
-  rect(0,11,screenwidth,screenheight,6)
+  -- rect(0,11,screenwidth,screenheight,6)
   -- rounded border
   --ul
   pset(0,11,1)
@@ -497,7 +490,7 @@ function messagedraw()
 			intensity = 7
 		end
 
-		x,y = 10,17
+		x,y = 15,23
 		if msgTimer < shakeTime then
 			if frnd(11)%2==0 then shakeRangeX = frnd(intensity) else shakeRangeX = -1*frnd(intensity) end
 			if frnd(11)%2==0 then shakeRangeY = frnd(intensity) else shakeRangeY = -1*frnd(intensity) end
