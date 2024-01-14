@@ -406,8 +406,21 @@ function gamedraw()
   messagedraw()
   combodraw()
   -- border
-  rect(0,0,screenwidth,screenheight,7)
-  rect(0,0,screenwidth,11,7)
+  rect(0,11,screenwidth,screenheight,6)
+  -- rounded border
+  --ul
+  pset(0,11,1)
+  pset(1,12,1)
+  --ur
+  pset(screenwidth,11,1)
+  pset(screenwidth-1,12,1)
+  --dl
+  pset(0,screenheight,1)
+  pset(1,screenheight-1,1)
+  --dr
+  pset(screenwidth,screenheight,1)
+  pset(screenwidth-1,screenheight-1,1)
+  -- rect(0,11,screenwidth,11,7)
   -- text
   print("score: " .. score, 4, 4, 7)
 
@@ -474,9 +487,8 @@ function combobardraw(x,y,w)
 	end
 
 	-- outline
-	rectfill(x, y, x+w, y+h, 7)
+	rectfill(x, y, x+w, y+h, 6)
 	-- bg
-	rectfill(x+1, y+1, x+w-1, y+h-1, 1)
 	rectfill(x+1, y+1, x+w-1, y+h-1, 0)
 	-- progress
 	if percent<0.40 then

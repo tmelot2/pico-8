@@ -303,7 +303,7 @@ function drawplayer()
 end
 
 function drawplayertrail()
-	pdur=150
+	pdur=200
 	for par in all(pt) do
 		par.t+=frnd(2)
 		if par.t>pdur then
