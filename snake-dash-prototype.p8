@@ -3,11 +3,14 @@ version 41
 __lua__
 -- Snek Dash
 
+-- map dimension: 16x15
+
 -- flags
 -- 0 wall
+-- 1 bg tile, appears in tiny maps
 
 -- debug
-skiptitle=1
+skiptitle=0
 dbg={}
 
 -- screen
@@ -38,7 +41,7 @@ snakepalettes = {
  snakorpion={10,10,10,10,10,10,10,10,0,0},
  rainbow={7,7,14,14,8,8,9,9,10,10,11,11,3,3,12,12,2,2}
 }
--- snakepalette=snakepalettes.plain
+snakepalette=snakepalettes.plain
 snakepalette=snakepalettes.rainbow
 
 -- player dead effect
@@ -46,36 +49,36 @@ circles = {}
 
 -- game 
 scene=0
-timer = 0
-score = 0
-dashamount = 20
-dashframes = 20
-comboNum = 0
-comboTimer = 0
-COMBO_THRESHOLD = 60
+timer=0
+score=0
+dashamount=20
+dashframes=20
+comboNum=0
+comboTimer=0
+COMBO_THRESHOLD=60
 
 -- levels
 levels={
-  [1]={ name='Duel', mx=0, my=0 },
-  [2]={ name='Scattered', mx=16, my=0 }
+  [1]={ name='duel', mx=0, my=0 },
+  [2]={ name='scatter', mx=16, my=0 }
 }
 curLevel=1
 
 -- food
 food={}
-foodsprites = {1,2,17}
+foodsprites={1,2,17}
 shine={}
 crumbs={}
 
 -- background
-bgcolor = 5
+bgcolor=5
 
 -- message
-msgTimer = 0
-shakeTime = 6
+msgTimer=0
+shakeTime=6
 
 function _init()
-  if (skiptitle==1) scene = 1
+  if (skiptitle==1) scene=1
 
   if (scene==0) then
     titleinit()
@@ -94,7 +97,7 @@ function _update()
   	if not player.dead then
       gameupdate()
     else
-    	timer = 0
+    	timer=0
     end
 
   elseif scene==2 then
@@ -132,14 +135,14 @@ function titleupdate()
 end
 
 function titledraw()
-  local titletxt = "snek dash!!1"
+  local titletxt="snek dash!"
   rectfill(0,0,screenwidth, screenheight, 3)
   wavyPrint(titletxt, 24, 29, 5, 5)
   wavyPrint(titletxt, 25, 30, 5, 7)
 
   local bx=40
   local by=58
-  local byStr = 'BY TED MELOT'
+  local byStr='BY TED MELOT'
   print(byStr, bx-1, by-1, 5)
   print(byStr, bx, by, 9)
 
@@ -148,6 +151,38 @@ function titledraw()
   local startStr = "presssss z to ssssstart"
   wavyPrintAll(startStr, bx-1, by-1, 2, 5)
   wavyPrintAll(startStr, bx, by, 2, 6)
+
+  draw_tiny_map(1,40,40)
+end
+
+function draw_tiny_map(num,atx,aty)
+  local map=levels[num]
+  w,h=16,15
+  size=1 -- rect size
+  pad=2 -- padding between rects
+  
+  -- bg
+  rectfill(atx,aty, atx+w*size+w*pad, aty+h*size+h*pad, 0)
+  
+  for x=0,w-1 do
+    for y=0,h-1 do
+      tile=mget(map.mx+x, map.my+y)
+      is_wall=fget(tile)==1
+      is_bg=fget(tile)==2
+      if is_wall then 
+        c=15
+      elseif is_bg then 
+        c=2
+      else 
+        c=1 
+      end
+      rectfill(atx+(x*size)+(x*pad), aty+(y*size)+(y*pad), atx+(x*size)+size+(x*pad), aty+(y*size)+size+(y*pad), c)
+    end
+  end
+
+  title=map.name
+  text_w=4*#title
+  print(title, atx, aty+(h*size)+(h+pad)+2)
 end
 
 
@@ -167,7 +202,7 @@ function gameinit()
   timer=0
   score=0
 
-  food = {}
+  food={}
   spawnfood(4)
   crumbs={}
 
@@ -191,7 +226,7 @@ function gameupdate()
   -- player dash
   if (player.dashframe > 0) then
    if (player.dashframe > dashframes) then
-    player.dashframe = 0
+    player.dashframe=0
     player.dashreloadframe=1
     add(shine,{id='dash_recharge', x=player.x-3, y=player.y-3, tick=0})
    else
@@ -260,11 +295,11 @@ function gameupdate()
 
   -- combo
   if comboTimer > 0 then
-    comboTimer += 1
+    comboTimer+=1
     if comboTimer > COMBO_THRESHOLD then
       comboEnd(comboNum)
-      comboNum = 0
-      comboTimer = 0
+      comboNum=0
+      comboTimer=0
     end
   end
 end
@@ -307,22 +342,22 @@ function crumbsupdate()
   local i=0
   for c in all(crumbs) do
     if not c.deleted then
-      c.x += c.vx
+      c.x+=c.vx
       -- bounce off either side of screen
       if (c.x < 1) then c.x = 1 c.vx = c.vx * -0.50
       elseif (c.x > screenwidth-1) then c.x = screenwidth-1 c.vx = c.vx * -0.50
       end
 
-      c.y += c.vy
+      c.y+=c.vy
       -- bounce off top or bottom of screen
       if (c.y < 11) then c.y = 11 c.vy = c.vy * -0.50
       elseif (c.y > screenheight-1) then c.y = screenheight-1 c.vy = c.vy * -0.50
       end
 
-      c.vx *= 0.50
-      c.vy *= 0.50
-      c.tick += 1
-      if (c.tick == 450) then del(crumbs,c) end
+      c.vx*=0.50
+      c.vy*=0.50
+      c.tick+=1
+      if (c.tick==450) then del(crumbs,c) end
 
       if flr(player.x) == flr(c.x) and flr(player.y) == flr(c.y) then
         c.deleted = true
@@ -350,51 +385,51 @@ function spawnfood(c)
 end
 
 function spawncrumbs(x,y,d)
-  local num = frnd(7)+8
-  local range = 5
+  local num=frnd(7)+8
+  local range=5
 
   -- if player dashing, more crumbs & move further
   if (player.dashframe > 0) then
-    num += 5
-    range = 15
+    num+=5
+    range=15
   end
 
-  local friction = 0.20
+  local friction=0.20
   local colors
   if frnd(2) == 0 then
-    colors = {1,2}
+    colors={1,2}
   else
-    colors = {4,2}
+    colors={4,2}
   end
-  local sign1 = 1
-  local vx = 0
-  local vy = 0
+  local sign1=1
+  local vx=0
+  local vy=0
 
   for i=1,num do
     if (rnd(1) < friction) then sign=-1 else sign=1 end
 
     -- fan out crumbs in the direction of player movement
-    if (d == 1) then
-      vx = rnd(range/2)*sign
-      vy = rnd(range)*-1
-    elseif (d == 2) then
-      vx = rnd(range)*-1
-      vy = rnd(range/2)*-sign
-    elseif (d == 3) then
-      vx = rnd(range/2)*sign
-      vy = rnd(range)
-    elseif (d == 4) then
-      vx = rnd(range)
-      vy = rnd(range/2)*sign
+    if (d==1) then
+      vx=rnd(range/2)*sign
+      vy=rnd(range)*-1
+    elseif (d==2) then
+      vx=rnd(range)*-1
+      vy=rnd(range/2)*-sign
+    elseif (d==3) then
+      vx=rnd(range/2)*sign
+      vy=rnd(range)
+    elseif (d==4) then
+      vx=rnd(range)
+      vy=rnd(range/2)*sign
     end
 
     add(crumbs,{
-      x = x,
-      y = y,
-      vx = vx,
-      vy = vy,
-      c = colors[frnd(#colors)+1],
-      tick = frnd(75)
+      x=x,
+      y=y,
+      vx=vx,
+      vy=vy,
+      c=colors[frnd(#colors)+1],
+      tick=frnd(75)
     })
  end
 end
@@ -411,17 +446,17 @@ function collectfood(foodlist, food)
   eatmessage()
 
   -- start combo timer
-  if comboTimer == 0 then
-    comboNum = 1
-    comboTimer = 1
-  elseif comboTimer < COMBO_THRESHOLD then
-    comboNum += 1
-    comboTimer = 1
+  if comboTimer==0 then
+    comboNum=1
+    comboTimer=1
+  elseif comboTimer<COMBO_THRESHOLD then
+    comboNum+=1
+    comboTimer=1
   end
 end
 
 function collectfoodExtraPoints(p)
-  score += p
+  score+=p
 end
 
 -- collects food if pos collides with any food
@@ -447,23 +482,23 @@ function playerdraw()
     if (v.x!=player.x or v.y!=player.y) then
       if player.dashreloadframe>0 and player.dashreloadframe<3 and #player.h-i<30 then
         if frnd(100)<80 then
-          c = 7
+          c=7
         else
-          c = snakepalette[i%(#snakepalette)+1]
+          c=snakepalette[i%(#snakepalette)+1]
         end
       else
-        c = snakepalette[i%(#snakepalette)+1]
+        c=snakepalette[i%(#snakepalette)+1]
       end
     pset(v.x,v.y,c)
     end
-    i += 1
+    i+=1
   end
 end
 
 
 -- acombo
 function combodraw()
-  if comboNum > 0 then
+  if comboNum>0 then
     s='combo: '..comboNum
     -- print(s, 60, 4, 10)
     if comboTimer>0 and comboTimer<=20 then
@@ -527,31 +562,31 @@ end
 
 -- agameover & dead
 function gameover()
-  player.dead = true 
+  player.dead=true 
   deadinit()
 end
 
 function gameoverinit()
-  scene = 2
-  timer = 0
+  scene=2
+  timer=0
   music(-1)
 
   rectfill(0,0,screenwidth,screenheight,8)
-  local text = 'u died fool'
+  local text='u died fool'
   print(text,hcenter(text),vcenter(text)-20,7)
 
   finalScoreDraw()
 
-  local text = 'press z to try'
+  local text='press z to try'
   print(text,hcenter(text),vcenter(text)+22,7)
-  local text = 'z'
+  local text='z'
   print(text,hcenter(text)-2,vcenter(text)+22,11)
-  local text = 'it again'
+  local text='it again'
   print(text,hcenter(text),vcenter(text)+30,7)
 end
 
 function gameoverupdate()
-  timer += 1
+  timer+=1
   if btn(4) and btn(5) then
     gameinit()
   end
@@ -562,12 +597,12 @@ function gameoverdraw()
 
   if timer > 70 then
     for x=1,1950 do
-      local xx = flr(rnd(screenwidth))
-      local yy = flr(rnd(screenheight-pad))
-      local cc = pget(xx,yy)
+      local xx=flr(rnd(screenwidth))
+      local yy=flr(rnd(screenheight-pad))
+      local cc=pget(xx,yy)
       if (cc==7 or flr(rnd(10))<=3) then
         -- change to drip left/right at first
-        if timer < 180 then
+        if timer<180 then
           -- drop left/right
           if (flr(rnd(100))==5) then xx+=1 elseif(flr(rnd(100))==10) then xx-=1 end
           -- drip darker from top
@@ -589,14 +624,14 @@ function gameoverdraw()
 end
 
 function deadinit()
-	scene = 3
-	timer = 0
-	circles = {}
-	pauseTimer = 0
+	scene=3
+	timer=0
+	circles={}
+	pauseTimer=0
 end
 
 function deadupdate()
-	timer += 1
+	timer+=1
 
 	if #player.h > 1 then
 		add(circles, {
@@ -623,7 +658,7 @@ function deadupdate()
 end
 
 function deaddraw()
-	len = 20
+	len=20
 
 	crumbsdraw()
 	playerdraw()
@@ -645,11 +680,11 @@ function deaddraw()
 end
 
 function finalScoreDraw()
-	local text = ''..score
-	x1 = 28
-	x2 = 100
-	y1 = 60
-	y2 = 66
+	local text=''..score
+	x1=28
+	x2=100
+	y1=60
+	y2=66
 	rectfill(x1,y1,x2,y2,8)
 	rect(x1,y1-1,x2,y2+1,3)
 	print(text,hcenter(text),vcenter(text)-0,11)
@@ -670,7 +705,7 @@ function playercontrol()
 
   -- dash
   if (btnp(4) and player.dashframe == 0) then
-    player.dashframe = 1
+    player.dashframe=1
     -- up
     if (player.dir==1) then
       player.y -= dashamount
@@ -697,7 +732,7 @@ function playercontrol()
         add(player.h,newpos)
         dashfoodcollect(food,newpos)
       end
-    
+
     -- right
     elseif (player.dir==4) then
       player.x += dashamount
@@ -719,7 +754,7 @@ end
 
 -- atext
 function eatmessage()
-  local msgs = {
+  local msgs={
     'yum',
     'delicious',
     'deliciousioso!!',
@@ -736,7 +771,7 @@ function eatmessage()
 end
 
 function dasheatmessage()
-  local msgs = {
+  local msgs={
     'radical',
     'bodacious',
     'righteous eating',
@@ -749,32 +784,32 @@ function dasheatmessage()
 end
 
 function messageupdate(newMsg, msgType)
-  msgTimer = 0
-  message = newMsg
-  messageType = msgType or 'normal'
+  msgTimer=0
+  message=newMsg
+  messageType=msgType or 'normal'
 end
 
 function messagedraw()
-  if msgTimer < 60 then
+  if msgTimer<60 then
     local intensity
     if messageType == 'normal' then
-      intensity = 1
+      intensity=1
     elseif messageType == 'shake' then
-      intensity = 2
+      intensity=2
     elseif messageType == 'shakeHard' then
-      intensity = 7
+      intensity=7
     end
 
     x,y = 15,23
     if msgTimer < shakeTime then
       if frnd(11)%2==0 then shakeRangeX = frnd(intensity) else shakeRangeX = -1*frnd(intensity) end
       if frnd(11)%2==0 then shakeRangeY = frnd(intensity) else shakeRangeY = -1*frnd(intensity) end
-      x += shakeRangeX
-      y += shakeRangeY
+      x+=shakeRangeX
+      y+=shakeRangeY
     end
     wavyPrint(message, x-15, y, 2, 8)
   end
-  msgTimer += 1
+  msgTimer+=1
 end
 
 function wavyPrint(s,x,y,h,c)
@@ -913,21 +948,21 @@ __gfx__
 00000000000000000000000000000000000000000000000000000000102442010000000000000000101111000011110000111101000000000000000000000000
 00000000000000000000000000000000000000000000000000000000717777170000000000000000111111111111111111111111000000000000000000000000
 __gff__
-0000000100000000000000000000000000000001010101010101000000000000000000010101010101010000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000100000000000000000000000000000001010101010101020202000000000000010101010101010202020000000000000000000001000002020200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 1524242424242424242424242424241615242424242424242424242424242416000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 130b0b0b0b0b0b0b0b0b0b0c0c0b0b14130b0c0c0c0c0d0d0d0c0c0c0c0c0c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 131e0a0c0c1e0a0c0b0c0c0b0c0b0c14130c0c0b0c0c0d330c0c0b0c0c0c0c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-130c0c0c0b0c0c0a0c0c0c0c0c0c0c1413330c0c370c0c0c0c0c370c0c0b3314000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-130c1a1b1b1b1c0c1e1a1b1b1b1c0c14130c0c0c1a1b1b371b1b1c0c0c0c0c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-131e2a17182b2b1b1b2b2b17182c0b14130c371a2b2b2b2b2b2b2b1c370c0c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-130c2a19292b2b2b2b2b2b19292c0c14130c0b2a2b2b2b2b2b2b2b2c0c0c0c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-130b2a19292b2b2b2b2b2b19292c1e14130b0c372b2b2b372b2b2b370c330c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-130b2a27282b2b3b3b2b2b27282c0c14130c332a2b2b2b2b2b2b2b2c0c0c0b14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-130c3a3b3b3b3c0a0c3a3b3b3b3c0b14130c373a2b2b2b2b2b2b2b3c370c0c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-130c0c0c0c0c0c0c0c1e0c0c0c0c0c14130c0c0c3a3b3b373b3b3c0c0c0c0a14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-130b0b0c0a0b0c1e0c1e1e0c0b0c0c14130c0b0c370c0c0a330c370c0d0d0c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+130c0c0c0b0c0c0a0c0c0c0c0c0c0c1413330c0c370c0c0a0b0c0c370c0c3314000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+130c001a1b1b1c0c1e1a1b1b1c000c14130c0c0c1a1b1b37371b1b1c0c0c0c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+131e0b2a17182b1b1b2b17182c0a0b14130c371a2b2b2b2b2b2b2b2b1c370c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+130c0b2a19292b2b2b2b19292c0c0c14130c0b2a2b2b2b2b2b2b2b2b2c0c0c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+130b0a2a19292b2b2b2b19292c0b1e14130b0c372b2b2b37372b2b2b370c0c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+130b002a19292b2b2b2b19292c0b0c14130c332a2b2b2b2b2b2b2b2b2c0c0b14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+130c0a2a27282b3b3b2b27282c000b14130c373a2b2b2b2b2b2b2b2b3c370c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+130c0c3a3b3b3c0a0c3a3b3b3c0c0c14130c0c0c3a3b3b37373b3b3c0c0c0a14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+130b0b0c0a0b0c1e0c1e1e0c0b0c0c14130c0b0c370c0b0a0b330c370c0d0c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 130b0c0b0a0c0c0c0c0c0b0c0a0c0c14130b0b0b0c0c0c0c0c0c0c0c0d0d0b14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 131e0c0c0c0b0c0a0b0b0a0b0c0b0c14130c0c0c0c0b0c0b0b0c0b0b0c0b0c14000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 2523232323232323232323232323232625232323232323232323232323232326000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
