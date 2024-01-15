@@ -132,7 +132,6 @@ function titleupdate()
 end
 
 function titledraw()
-
   local titletxt = "snek dash!!1"
   rectfill(0,0,screenwidth, screenheight, 3)
   wavyPrint(titletxt, 24, 29, 5, 5)
@@ -234,15 +233,15 @@ function gameupdate()
     end
   end
 
- -- food
- local playerobj={x=player.x,y=player.y,w=1,h=1}
- for f in all(food) do
-  local foodobj={x=f.x,y=f.y,w=4,h=4}
-  -- got food!
-  if iscolliding(playerobj,foodobj) then
-    collectfood(food,f)
+  -- food
+  local playerobj={x=player.x,y=player.y,w=1,h=1}
+  for f in all(food) do
+    local foodobj={x=f.x,y=f.y,w=4,h=4}
+    -- got food!
+    if iscolliding(playerobj,foodobj) then
+      collectfood(food,f)
+    end
   end
- end
 
   -- player length
   -- add to trail
@@ -276,7 +275,6 @@ function gamedraw()
 
   -- level
   l=levels[curLevel]
-  -- map(0,0, 0,10, 16,15)
   map(l.mx,l.my, 0,10, 16,15)
 
   -- crumbs
@@ -284,25 +282,9 @@ function gamedraw()
 
   -- hud
   rectfill(0,0,screenwidth, 10, 0)
-  -- message & combo
   messagedraw()
   combodraw()
-  -- border
-  -- rect(0,11,screenwidth,screenheight,6)
-  -- rounded border
-  --ul
-  pset(0,11,1)
-  pset(1,12,1)
-  --ur
-  pset(screenwidth,11,1)
-  pset(screenwidth-1,12,1)
-  --dl
-  pset(0,screenheight,1)
-  pset(1,screenheight-1,1)
-  --dr
-  pset(screenwidth,screenheight,1)
-  pset(screenwidth-1,screenheight-1,1)
-  -- rect(0,11,screenwidth,11,7)
+
   -- text
   print("score: " .. score, 4, 4, 7)
 
@@ -322,32 +304,32 @@ function gamedraw()
 end
 
 function crumbsupdate()
- local i=0
- for c in all(crumbs) do
-  if not c.deleted then
-    c.x += c.vx
-    -- bounce off either side of screen
-    if (c.x < 1) then c.x = 1 c.vx = c.vx * -0.50
-    elseif (c.x > screenwidth-1) then c.x = screenwidth-1 c.vx = c.vx * -0.50
-    end
+  local i=0
+  for c in all(crumbs) do
+    if not c.deleted then
+      c.x += c.vx
+      -- bounce off either side of screen
+      if (c.x < 1) then c.x = 1 c.vx = c.vx * -0.50
+      elseif (c.x > screenwidth-1) then c.x = screenwidth-1 c.vx = c.vx * -0.50
+      end
 
-    c.y += c.vy
-    -- bounce off top or bottom of screen
-    if (c.y < 11) then c.y = 11 c.vy = c.vy * -0.50
-    elseif (c.y > screenheight-1) then c.y = screenheight-1 c.vy = c.vy * -0.50
-    end
+      c.y += c.vy
+      -- bounce off top or bottom of screen
+      if (c.y < 11) then c.y = 11 c.vy = c.vy * -0.50
+      elseif (c.y > screenheight-1) then c.y = screenheight-1 c.vy = c.vy * -0.50
+      end
 
-    c.vx *= 0.50
-    c.vy *= 0.50
-    c.tick += 1
-    if (c.tick == 450) then del(crumbs,c) end
+      c.vx *= 0.50
+      c.vy *= 0.50
+      c.tick += 1
+      if (c.tick == 450) then del(crumbs,c) end
 
-    if flr(player.x) == flr(c.x) and flr(player.y) == flr(c.y) then
-      c.deleted = true
+      if flr(player.x) == flr(c.x) and flr(player.y) == flr(c.y) then
+        c.deleted = true
+      end
+      i+=1
     end
-    i+=1
   end
- end
 end
 
 function crumbsdraw()
@@ -360,59 +342,60 @@ end
 
 -- randomly spawn new food, c=count
 function spawnfood(c)
- for i=1,c do
-  newfood = {x=rnd(screenwidth-10)+2,y=rnd(screenheight-25)+14,s=foodsprites[frnd(#foodsprites)+1]}
-  add(food,newfood)
-  add(shine,{x=newfood.x-2,y=newfood.y-2,tick=0})
- end
+  for i=1,c do
+    newfood = {x=rnd(screenwidth-10)+2,y=rnd(screenheight-25)+14,s=foodsprites[frnd(#foodsprites)+1]}
+    add(food,newfood)
+    add(shine,{x=newfood.x-2,y=newfood.y-2,tick=0})
+  end
 end
 
 function spawncrumbs(x,y,d)
- local num = frnd(7)+8
- local range = 5
+  local num = frnd(7)+8
+  local range = 5
 
- -- if player dashing, more crumbs & move further
- if (player.dashframe > 0) then
-  num += 5
-  range = 15
- end
-
- local friction = 0.20
- local colors
- if frnd(2) == 0 then
-   colors = {1,2}
- else
-   colors = {4,2}
- end
- local sign1 = 1
- local vx = 0
- local vy = 0
-
- for i=1,num do
-  if (rnd(1) < friction) then sign=-1 else sign=1 end
-  -- fan out crumbs in the direction of player movement
-  if (d == 1) then
-   vx = rnd(range/2)*sign
-   vy = rnd(range)*-1
-  elseif (d == 2) then
-   vx = rnd(range)*-1
-   vy = rnd(range/2)*-sign
-  elseif (d == 3) then
-   vx = rnd(range/2)*sign
-   vy = rnd(range)
-  elseif (d == 4) then
-   vx = rnd(range)
-   vy = rnd(range/2)*sign
+  -- if player dashing, more crumbs & move further
+  if (player.dashframe > 0) then
+    num += 5
+    range = 15
   end
 
-  add(crumbs,{
-   x = x,
-   y = y,
-   vx = vx,
-   vy = vy,
-   c = colors[frnd(#colors)+1],
-   tick = frnd(75)
-  })
+  local friction = 0.20
+  local colors
+  if frnd(2) == 0 then
+    colors = {1,2}
+  else
+    colors = {4,2}
+  end
+  local sign1 = 1
+  local vx = 0
+  local vy = 0
+
+  for i=1,num do
+    if (rnd(1) < friction) then sign=-1 else sign=1 end
+
+    -- fan out crumbs in the direction of player movement
+    if (d == 1) then
+      vx = rnd(range/2)*sign
+      vy = rnd(range)*-1
+    elseif (d == 2) then
+      vx = rnd(range)*-1
+      vy = rnd(range/2)*-sign
+    elseif (d == 3) then
+      vx = rnd(range/2)*sign
+      vy = rnd(range)
+    elseif (d == 4) then
+      vx = rnd(range)
+      vy = rnd(range/2)*sign
+    end
+
+    add(crumbs,{
+      x = x,
+      y = y,
+      vx = vx,
+      vy = vy,
+      c = colors[frnd(#colors)+1],
+      tick = frnd(75)
+    })
  end
 end
 
@@ -443,38 +426,37 @@ end
 
 -- collects food if pos collides with any food
 function dashfoodcollect(food,pos)
- for f in all(food) do
-  if (iscolliding({x=pos.x,y=pos.y,w=1,h=1},{x=f.x,y=f.y,w=4,h=4})) then
-   collectfood(food,f)
-   collectfoodExtraPoints(500)
-   dasheatmessage()
+  for f in all(food) do
+    if (iscolliding({x=pos.x,y=pos.y,w=1,h=1},{x=f.x,y=f.y,w=4,h=4})) then
+      collectfood(food,f)
+      collectfoodExtraPoints(500)
+      dasheatmessage()
+    end
   end
- end
 end
 
 function playerdraw()
   if not player.dead then
-  -- head (current pos)
-  pset(player.x,player.y,11)
-  -- spr(0, player.x, player.y)
+    -- head (current pos)
+    pset(player.x,player.y,11)
   end
 
   -- tail
   local i = 1
   for i,v in ipairs(player.h) do
-   if (v.x!=player.x or v.y!=player.y) then
-    if player.dashreloadframe>0 and player.dashreloadframe<3 and #player.h-i<30 then
-      if frnd(100)<80 then
-        c = 7
+    if (v.x!=player.x or v.y!=player.y) then
+      if player.dashreloadframe>0 and player.dashreloadframe<3 and #player.h-i<30 then
+        if frnd(100)<80 then
+          c = 7
+        else
+          c = snakepalette[i%(#snakepalette)+1]
+        end
       else
         c = snakepalette[i%(#snakepalette)+1]
       end
-    else
-      c = snakepalette[i%(#snakepalette)+1]
-    end
     pset(v.x,v.y,c)
-   end
-   i += 1
+    end
+    i += 1
   end
 end
 
@@ -550,22 +532,22 @@ function gameover()
 end
 
 function gameoverinit()
- scene = 2
- timer = 0
- music(-1)
+  scene = 2
+  timer = 0
+  music(-1)
 
- rectfill(0,0,screenwidth,screenheight,8)
- local text = 'u died fool'
- print(text,hcenter(text),vcenter(text)-20,7)
+  rectfill(0,0,screenwidth,screenheight,8)
+  local text = 'u died fool'
+  print(text,hcenter(text),vcenter(text)-20,7)
 
- finalScoreDraw()
+  finalScoreDraw()
 
- local text = 'press z to try'
- print(text,hcenter(text),vcenter(text)+22,7)
- local text = 'z'
- print(text,hcenter(text)-2,vcenter(text)+22,11)
- local text = 'it again'
- print(text,hcenter(text),vcenter(text)+30,7)
+  local text = 'press z to try'
+  print(text,hcenter(text),vcenter(text)+22,7)
+  local text = 'z'
+  print(text,hcenter(text)-2,vcenter(text)+22,11)
+  local text = 'it again'
+  print(text,hcenter(text),vcenter(text)+30,7)
 end
 
 function gameoverupdate()
@@ -576,34 +558,34 @@ function gameoverupdate()
 end
 
 function gameoverdraw()
- local pad=20
+  local pad=20
 
- if timer > 70 then
-  for x=1,1950 do
-   local xx = flr(rnd(screenwidth))
-   local yy = flr(rnd(screenheight-pad))
-   local cc = pget(xx,yy)
-   if (cc==7 or flr(rnd(10))<=3) then
-    -- change to drip left/right at first
-    if timer < 180 then
-     -- drop left/right
-     if (flr(rnd(100))==5) then xx+=1 elseif(flr(rnd(100))==10) then xx-=1 end
-     -- drip darker from top
-     if (flr(rnd(50)) == 10) then pset(flr(rnd(screenwidth+1)),0,2) end
-    -- change to only become red after
-    elseif timer < 360 then
-     if (flr(rnd(100)) == 2) then
-      pset(flr(rnd(screenwidth+1)),flr(rnd(screenheight)),8)
-     end
-    -- black drips from top
-    else
-      if (flr(rnd(100))%5==0) then pset(flr(rnd(screenwidth)),0,0) end
+  if timer > 70 then
+    for x=1,1950 do
+      local xx = flr(rnd(screenwidth))
+      local yy = flr(rnd(screenheight-pad))
+      local cc = pget(xx,yy)
+      if (cc==7 or flr(rnd(10))<=3) then
+        -- change to drip left/right at first
+        if timer < 180 then
+          -- drop left/right
+          if (flr(rnd(100))==5) then xx+=1 elseif(flr(rnd(100))==10) then xx-=1 end
+          -- drip darker from top
+          if (flr(rnd(50)) == 10) then pset(flr(rnd(screenwidth+1)),0,2) end
+        -- change to only become red after
+        elseif timer < 360 then
+          if (flr(rnd(100)) == 2) then
+            pset(flr(rnd(screenwidth+1)),flr(rnd(screenheight)),8)
+          end
+        -- black drips from top
+        else
+          if (flr(rnd(100))%5==0) then pset(flr(rnd(screenwidth)),0,0) end
+        end
+        pset(xx,yy+1,cc)
+      end
     end
-    pset(xx,yy+1,cc)
-   end
+  finalScoreDraw()
   end
- finalScoreDraw()
- end
 end
 
 function deadinit()
@@ -647,21 +629,20 @@ function deaddraw()
 	playerdraw()
 
 	for c in all(circles) do
-		circfill(c.x, c.y, c.r, c.c)
-		for i=0,frnd(3) do
-			nx=rndneg()*2+c.r + flr(rnd(len)*cos(rnd(1)))
-			ny=rndneg()*2+c.r + flr(rnd(len)*sin(rnd(1)))
-			bigger = flr(rnd(10)) > 7
-			if bigger then size = 2 else size = 1 end
-			circfill(c.x+nx, c.y+ny, size, c.c)
-			if flr(rnd(10) > 8) then
-				line(c.x-0.1*nx, c.y-0.1*ny, c.x+nx,c.y+ny, c.c)
-			end
-		end
+  	circfill(c.x, c.y, c.r, c.c)
+  	for i=0,frnd(3) do
+  		nx=rndneg()*2+c.r + flr(rnd(len)*cos(rnd(1)))
+  		ny=rndneg()*2+c.r + flr(rnd(len)*sin(rnd(1)))
+  		bigger = flr(rnd(10)) > 7
+  		if bigger then size = 2 else size = 1 end
+  		circfill(c.x+nx, c.y+ny, size, c.c)
+  		if flr(rnd(10) > 8) then
+  			line(c.x-0.1*nx, c.y-0.1*ny, c.x+nx,c.y+ny, c.c)
+  		end
+  	end
 	end
 	circles={}
 end
-
 
 function finalScoreDraw()
 	local text = ''..score
@@ -677,9 +658,9 @@ end
 
 -- ainput
 function playercontrol()
- -- l?
+  -- l?
   if (btn(0) and player.dir!=4) then player.dir=2
- -- r?
+  -- r?
   elseif (btn(1) and player.dir!=2) then player.dir=4
   -- u?
   elseif (btn(2) and player.dir!=3) then player.dir=1
@@ -689,46 +670,49 @@ function playercontrol()
 
   -- dash
   if (btnp(4) and player.dashframe == 0) then
-   player.dashframe = 1
-   -- up
-   if (player.dir==1) then
-    player.y -= dashamount
-    for i=1,dashamount do
-     local newpos = {x=player.x,y=(dashamount+player.y)-i}
-     add(player.h,newpos)
-     dashfoodcollect(food,newpos)
+    player.dashframe = 1
+    -- up
+    if (player.dir==1) then
+      player.y -= dashamount
+      for i=1,dashamount do
+        local newpos = {x=player.x,y=(dashamount+player.y)-i}
+        add(player.h,newpos)
+        dashfoodcollect(food,newpos)
     end
-   -- left
-   elseif (player.dir==2) then
-    player.x -= dashamount
-    for i=1,dashamount do
-     local newpos = {x=(dashamount+player.x)-i,y=player.y}
-     add(player.h,newpos)
-     dashfoodcollect(food,newpos)
-    end
-   -- down
-   elseif (player.dir==3) then
-    player.y += dashamount
-    for i=1,dashamount do
-     local newpos = {x=player.x,y=(player.y-dashamount)+i}
-     add(player.h,newpos)
-     dashfoodcollect(food,newpos)
-    end
-   -- right
-   elseif (player.dir==4) then
-    player.x += dashamount
-    for i=1,dashamount do
-     local newpos = {x=(player.x-dashamount)+i,y=player.y}
-     add(player.h,newpos)
-     dashfoodcollect(food,newpos)
-    end
-   end
 
-   for x=1,dashamount do
-    del(player.h,player.h[1])
-   end
+    -- left
+    elseif (player.dir==2) then
+      player.x -= dashamount
+      for i=1,dashamount do
+        local newpos = {x=(dashamount+player.x)-i,y=player.y}
+        add(player.h,newpos)
+        dashfoodcollect(food,newpos)
+      end
 
-   sfx(5)
+    -- down
+    elseif (player.dir==3) then
+      player.y += dashamount
+      for i=1,dashamount do
+        local newpos = {x=player.x,y=(player.y-dashamount)+i}
+        add(player.h,newpos)
+        dashfoodcollect(food,newpos)
+      end
+    
+    -- right
+    elseif (player.dir==4) then
+      player.x += dashamount
+      for i=1,dashamount do
+        local newpos = {x=(player.x-dashamount)+i,y=player.y}
+        add(player.h,newpos)
+        dashfoodcollect(food,newpos)
+      end
+    end
+
+    for x=1,dashamount do
+      del(player.h,player.h[1])
+    end
+
+    sfx(5)
   end
 end
 
@@ -884,7 +868,7 @@ end
 
 -- shorthand for flr(rnd(x))
 function frnd(x)
- return flr(rnd(x))
+  return flr(rnd(x))
 end
 
 function rndneg()
