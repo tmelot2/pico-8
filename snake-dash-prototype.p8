@@ -152,17 +152,25 @@ function titledraw()
   wavyPrintAll(startStr, bx-1, by-1, 2, 5)
   wavyPrintAll(startStr, bx, by, 2, 6)
 
-  draw_tiny_map(1,40,40)
+  sx,sy=2,40
+  for i=0,1 do
+	  draw_tiny_map(i+1,sx+i*60,sy)
+  end
 end
 
 function draw_tiny_map(num,atx,aty)
   local map=levels[num]
-  w,h=16,15
-  size=1 -- rect size
-  pad=2 -- padding between rects
-  
+  w,h=16,15 -- map dimension
+  size=1 -- cell size
+  pad=2 -- padding between cells
+
+  -- shadow
+  -- dist=3
+  -- rectfill(atx+dist,aty+dist, dist+atx+(w-1/2)*size+(w-1/2)*pad, dist+aty+(h-1/2)*size+(h-1/2)*pad, 0)
+  --frame
+  rect(atx-1,aty-1, 1+atx+(w-1/2)*size+(w-1/2)*pad, 1+aty+(h-1/2)*size+(h-1/2)*pad, 1)
   -- bg
-  rectfill(atx,aty, atx+w*size+w*pad, aty+h*size+h*pad, 0)
+  rectfill(atx,aty, atx+(w-1/2)*size+(w-1/2)*pad, aty+(h-1/2)*size+(h-1/2)*pad, 0)
   
   for x=0,w-1 do
     for y=0,h-1 do
@@ -176,13 +184,13 @@ function draw_tiny_map(num,atx,aty)
       else 
         c=1 
       end
-      rectfill(atx+(x*size)+(x*pad), aty+(y*size)+(y*pad), atx+(x*size)+size+(x*pad), aty+(y*size)+size+(y*pad), c)
+      rect(atx+(x*size)+(x*pad), aty+(y*size)+(y*pad), atx+(x*size)+size+(x*pad), aty+(y*size)+size+(y*pad), c)
     end
   end
 
   title=map.name
   text_w=4*#title
-  print(title, atx, aty+(h*size)+(h+pad)+2)
+  comictext(title, atx, aty+(h*size)+(h*pad)+2)
 end
 
 
@@ -315,11 +323,6 @@ function gamedraw()
   -- crumbs
   crumbsdraw()
 
-  -- hud
-  rectfill(0,0,screenwidth, 10, 0)
-  messagedraw()
-  combodraw()
-
   -- text
   print("score: " .. score, 4, 4, 7)
 
@@ -336,6 +339,11 @@ function gamedraw()
    p.tick+=1
    if (p.tick > 4) then del(shine,p) end
   end
+
+  -- hud
+  rectfill(0,0,screenwidth, 10, 0)
+  messagedraw()
+  combodraw()
 end
 
 function crumbsupdate()
@@ -814,7 +822,8 @@ end
 
 function wavyPrint(s,x,y,h,c)
   for s in all(s) do
-    print(s,10+x,y + h*sin((1.2*x-timer*1.4)*(3.1459/180)), c)
+    -- print(s,10+x,y + h*sin((1.2*x-timer*1.4)*(3.1459/180)), c)
+    comictext(s,10+x,y + h*sin((1.2*x-timer*1.4)*(3.1459/180)), c)
     x+=5
   end
 end
@@ -831,6 +840,33 @@ function table_key_count(t)
     c+=1
   end
   return c
+end
+
+function comictext(s,x,y)
+	w=4
+	-- rectfill(x+2,y-2, x+(#s*w)+4,y+6, 1)
+	for i=1,#s do
+		--u
+		print(s[i], x+i*w, y-1, 15)
+		--d
+		print(s[i], x+i*w, y+1, 15)
+		--l
+		print(s[i], x+i*w-1, y, 15)
+		--r
+		print(s[i], x+i*w+1, y, 15)
+
+		--ul
+		print(s[i], x+i*w-1, y-1, 15)
+		--ur
+		print(s[i], x+i*w+1, y-1, 15)
+		--dl
+		print(s[i], x+i*w-1, y+1, 15)
+		--dr
+		print(s[i], x+i*w+1, y+1, 15)
+		
+		--c
+		print(s[i], x+i*w, y, 0)
+	end
 end
 
 function scale_text(str,x,y,c,scale)
