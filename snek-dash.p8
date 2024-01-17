@@ -2,6 +2,8 @@ pico-8 cartridge // http://www.pico-8.com
 version 41
 __lua__
 -- Snek Dash
+-- lrud zx
+-- ⬅️➡️⬆️⬇️🅾️❎
 
 -- map dimension: 16x15
 
@@ -132,6 +134,7 @@ end
 
 -- atitle
 function titleinit()
+	timer=80
 	if (play_music) music(3)
 	-- curLevel=1
 end
@@ -171,9 +174,24 @@ function titledraw()
 
   sx,sy=40,36
   draw_tiny_map(curLevel,sx,sy)
-  -- for i=0,2 do
--- 	  draw_tiny_map((i+1),sx+i*60,sy)
-  -- end
+
+  -- animated arrow buttons
+  shadow=true
+  show_left=curLevel>1
+  show_right=curLevel<#levels
+  yy=0
+  if timer%100<7 then
+	  yy=1
+	  shadow=false
+  end
+  if show_left then 
+  	  if (shadow) print('⬅️',20,55+yy+1,1)
+	  print('⬅️',20,55+yy,7)
+  end
+  if show_right then
+  	if (shadow) print('➡️',100,55+yy+1,1)
+    print('➡️',100,55+yy,7)
+  end
 end
 
 function draw_tiny_map(num,atx,aty)
