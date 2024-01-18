@@ -135,21 +135,35 @@ end
 -- atitle
 function titleinit()
 	timer=80
+	slt=0 -- select level timer, for anim
+	dir=0 --0 left, 1 right
 	if (play_music) music(3)
-	-- curLevel=1
 end
 
 function titleupdate()
+	if (slt<4) slt+=1
+
 	if btnp(0) then
-		if (curLevel>1) curLevel-=1 sfx(6)
+		if curLevel>1 then
+			curLevel-=1 
+			sfx(6) 
+			slt=0
+			dir=0
+		end
 	elseif btnp(1) then
-		if (curLevel<#levels) curLevel+=1 sfx(6)
+		if curLevel<#levels then
+			curLevel+=1
+			sfx(6)
+			slt=0
+			dir=1
+		end
 	end
 
 	if btnp(4) then
     sfx(7)
 		gameinit()
 	end
+	addDebug('slt '..slt)
 end
 
 function titledraw()
@@ -173,6 +187,11 @@ function titledraw()
   wavyPrintAll(startStr, bx, by, 2, 6)
 
   sx,sy=40,36
+  if dir==0 then
+	sx-=1*(4-slt)
+  elseif dir==1 then
+  	sx+=1*(4-slt)
+  end
   draw_tiny_map(curLevel,sx,sy)
 
   -- arrow buttons
@@ -203,8 +222,8 @@ function draw_tiny_map(num,atx,aty)
   total_h=0 -- total height
 
   -- shadow
-  -- dist=3
-  -- rectfill(atx+dist,aty+dist, dist+atx+(w-1/2)*size+(w-1/2)*pad, dist+aty+(h-1/2)*size+(h-1/2)*pad, 0)
+  dist=3
+  rectfill(atx+dist,aty+dist, dist+atx+(w-1/2)*size+(w-1/2)*pad, dist+aty+(h-1/2)*size+(h-1/2)*pad, 0)
   --frame
   rect(atx-1,aty-1, 1+atx+(w-1/2)*size+(w-1/2)*pad, 1+aty+(h-1/2)*size+(h-1/2)*pad, 1)
   -- bg
