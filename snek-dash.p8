@@ -46,6 +46,13 @@ snakepalettes = {
  snakorpion={10,10,10,10,10,10,10,10,0,0},
  rainbow={7,7,14,14,8,8,9,9,10,10,11,11,3,3,12,12,2,2}
 }
+snakepalettes2 = {
+ [1]={name='plain', p={3,3,3,2,2,1,0}},
+ [2]={name='texascoralsnake', p={0,0,0,10,8,8,8,10}},
+ [3]={name='snakezero', p={12,12,12,12,12,12,12,1,1,0,0}},
+ [4]={name='snakorpion', p={10,10,10,10,10,10,10,10,0,0}},
+ [5]={name='rainbow', p={7,7,14,14,8,8,9,9,10,10,11,11,3,3,12,12,2,2}}
+}
 snakepalette=snakepalettes.plain
 snakepalette=snakepalettes.rainbow
 
@@ -131,7 +138,7 @@ function _draw()
   end
 
   addDebug('cpu '..stat(1))
-  drawDebug(1,-5)
+  -- drawDebug(1,-5)
 end
 
 
@@ -146,6 +153,7 @@ end
 function titleupdate()
 	if (slt<4) slt+=1
 
+  --lr
 	if btnp(0) then
 		if curLevel>1 then
 			curLevel-=1 
@@ -162,6 +170,14 @@ function titleupdate()
 		end
 	end
 
+  --ud
+  if btnp(2) then
+    snakepalette=snakepalettes.plain
+  elseif btnp(3) then
+    snakepalette=snakepalettes.texascoralsnake
+  end
+
+  -- o
 	if btnp(4) then
     sfx(7)
 		gameinit()
@@ -170,28 +186,47 @@ function titleupdate()
 end
 
 function titledraw()
-  rectfill(0,0,screenwidth, screenheight, 3)
+  rectfill(0,0,screenwidth, screenheight, 1)
 
-  -- bg
-  count=0
-  w=32
+  -- scrolling bg
+  clip(0,34,128,59)
+  w=30
   speed=2
-  for x=-w, screenwidth/w do
-    for y=-w, screenheight/w do
+  for x=-2, 1+screenwidth/w do
+    for y=-2, 1+screenheight/w do
       if (x+y)%2==0 then c=1 else c=3 end
       x1=(-timer/speed%w)+x*w
       y1=(-timer/speed%w)+y*w
       
-      x1+=abs(8*cos(timer/270)+1)
+      x1+=abs(9*cos((timer+130)/270)+2)
       y1+=5*sin(timer/140)+1
       
       rectfill(x1,y1, x1+w,y1+w, c)
-      -- rect(x1,y1, x1+w,y1+w, c-1)
-      -- sspr(s, (-timer/3%16)+x*w, (-timer/3%16)+y*w, w,w)
-      count+=1
+      -- rect(x1,y1, x1+w,y1+w, 2)
     end
   end
-  log('count '..count)
+  clip()
+
+  -- overlay
+  fillp(▒)
+  rectfill(0,34,128,93,5)
+  fillp()
+  borderpal={}
+  len=#snakepalette
+  for i=1,len+15 do
+    add(borderpal,snakepalette[i])
+    if i>len then
+      add(borderpal,0)
+    end
+  end
+  -- border
+  for x=0,128 do
+    c=borderpal[#borderpal-(x+timer)%#borderpal]
+    pset(128-x,34,c)
+    -- pset(128-x,32,c)
+    -- pset(x,92,c)
+    pset(x,93,c)
+  end
 
   local titletxt="snek dash!"
   x=27
@@ -199,6 +234,7 @@ function titledraw()
   wavyPrint(titletxt, x, y, 5, 5)
   wavyPrint(titletxt, x+1, y+1, 5, 7)
 
+  -- words
   local bx=40
   local by=25
   local byStr='BY TED MELOT'
@@ -211,7 +247,8 @@ function titledraw()
   wavyPrintAll(startStr, bx-1, by-1, 2, 5)
   wavyPrintAll(startStr, bx, by, 2, 6)
 
-  sx,sy=40,36
+  -- tiny map
+  sx,sy=40,38
   if dir==0 then
 	sx-=1*(4-slt)
   elseif dir==1 then
@@ -224,17 +261,25 @@ function titledraw()
   show_left=curLevel>1
   show_right=curLevel<#levels
   yy=0
-  if timer%100<7 then
+  if timer%50<7 then
 	  yy=1
 	  shadow=false
   end
   if show_left then 
-  	  if (shadow) print('⬅️',20,55+yy+1,1)
-	  print('⬅️',20,55+yy,7)
+  	  if (shadow) print('⬅️',20,55+yy+4,1)
+	  print('⬅️',19,2+56+yy,0)
+    print('⬅️',21,2+55+yy,0)
+    print('⬅️',20,2+54+yy,0)
+    print('⬅️',20,2+56+yy,0)
+    print('⬅️',20,2+55+yy,7)
   end
   if show_right then
-  	if (shadow) print('➡️',100,55+yy+1,1)
-    print('➡️',100,55+yy,7)
+  	if (shadow) print('➡️',100,55+yy+4,1)
+    print('➡️',99,2+55+yy,0)
+    print('➡️',101,2+55+yy,0)
+    print('➡️',100,2+54+yy,0)
+    print('➡️',100,2+56+yy,0)
+    print('➡️',100,2+55+yy,7)
   end
 end
 
@@ -368,18 +413,7 @@ function gameupdate()
   end
 
   -- food
-  log('player '..player.x..','..player.y)
-  if player!= nil and food != nil and #food>0 then
-    playerfoodcollide(food,{x=player.x,y=player.y})
-  end
-  -- local playerobj={x=player.x,y=player.y,w=1,h=1}
-  -- for f in all(food) do
-  --   local foodobj={x=f.x,y=f.y,w=4,h=4}
-  --   -- got food!
-  --   if iscolliding(playerobj,foodobj) then
-  --     collectfood(food,f)
-  --   end
-  -- end
+  playerfoodcollide(food,{x=player.x,y=player.y})
 
   -- player length
   -- add to trail
@@ -418,9 +452,6 @@ function gamedraw()
   -- crumbs
   crumbsdraw()
 
-  -- text
-  print("score: " .. score, 4, 4, 7)
-
   playerdraw()
 
   -- food
@@ -439,6 +470,7 @@ function gamedraw()
   rectfill(0,0,screenwidth, 10, 0)
   messagedraw()
   combodraw()
+  print("score: " .. score, 4, 4, 8)
 end
 
 function crumbsupdate()
@@ -558,18 +590,11 @@ function collectfood(foodlist, food)
   end
 end
 
-function collectfoodExtraPoints(p)
-  score+=p
-end
-
 -- collects food if pos collides with any food
 function playerfoodcollide(food,pos)
-  log('2 food '..#food)
-  log('2 pos '..pos.x..','..pos.y)
   for f in all(food) do
     if (iscolliding({x=pos.x,y=pos.y,w=1,h=1},{x=f.x,y=f.y,w=4,h=4})) then
       collectfood(food,f)
-      collectfoodExtraPoints(500)
       dasheatmessage()
     end
   end
