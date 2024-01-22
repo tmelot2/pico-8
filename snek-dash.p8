@@ -139,7 +139,7 @@ function _draw()
   end
 
   addDebug('cpu '..stat(1))
-  -- drawDebug(1,-5)
+  drawDebug(1,-5)
 end
 
 
@@ -149,6 +149,7 @@ function titleinit()
 	slt=5 -- select level timer, for anim
 	dir=0 --0 left, 1 right
 	if (play_music) music(3)
+	hs=read_scores(curLevel)
 end
 
 function titleupdate()
@@ -157,7 +158,8 @@ function titleupdate()
   --lr
 	if btnp(0) then
 		if curLevel>1 then
-			curLevel-=1 
+			curLevel-=1
+			hs=read_scores(curLevel)
 			sfx(6) 
 			slt=0
 			dir=0
@@ -165,6 +167,7 @@ function titleupdate()
 	elseif btnp(1) then
 		if curLevel<#levels then
 			curLevel+=1
+			hs=read_scores(curLevel)
 			sfx(6)
 			slt=0
 			dir=1
@@ -190,7 +193,7 @@ function titledraw()
   rectfill(0,0,screenwidth, screenheight, 1)
 
   -- scrolling bg
-  clip(0,34,128,59)
+  clip(0,34,128,60)
   w=30
   speed=2
   for x=-2, 1+screenwidth/w do
@@ -199,8 +202,8 @@ function titledraw()
       x1=(-timer/speed%w)+x*w
       y1=(-timer/speed%w)+y*w
       
-      x1+=abs(9*cos((timer+130)/270)+2)
-      y1+=5*sin(timer/140)+1
+      x1+=abs(13*cos((timer+130)/270)+2) + 4*cos(timer/400)
+      y1+=3*sin(timer/140)+1
       
       rectfill(x1,y1, x1+w,y1+w, c)
       -- rect(x1,y1, x1+w,y1+w, 2)
@@ -208,9 +211,9 @@ function titledraw()
   end
   clip()
 
-  -- overlay
+  -- faded overlay
   fillp(▒)
-  rectfill(0,34,128,93,5)
+  rectfill(0,34,128,94,5)
   fillp()
   borderpal={}
   len=#snakepalette
@@ -226,14 +229,14 @@ function titledraw()
     pset(128-x,34,c)
     -- pset(128-x,32,c)
     -- pset(x,92,c)
-    pset(x,93,c)
+    pset(x,94,c)
   end
 
   local titletxt="snek dash!"
   x=27
-  y=11
-  wavyPrint(titletxt, x, y, 5, 5)
-  wavyPrint(titletxt, x+1, y+1, 5, 7)
+  y=9
+  wavyPrint(titletxt, x, y, 2, 5)
+  wavyPrint(titletxt, x+1, y+1, 3, 7)
 
   -- words
   local bx=40
@@ -243,10 +246,15 @@ function titledraw()
   print(byStr, bx, by, 9)
 
   local bx=18
-  local by=103
+  local by=122
   local startStr = "presssss 🅾️ to ssssstart"
-  wavyPrintAll(startStr, bx-1, by-1, 2, 5)
-  wavyPrintAll(startStr, bx, by, 2, 6)
+  wavyPrintAll(startStr, bx-1, by-1, 1, 0)
+  wavyPrintAll(startStr, bx-1, by, 1, 0)
+  wavyPrintAll(startStr, bx, by-1, 1, 0)
+  wavyPrintAll(startStr, bx+1, by+1, 1, 0)
+  wavyPrintAll(startStr, bx+1, by, 1, 0)
+  wavyPrintAll(startStr, bx, by+1, 1, 0)
+  wavyPrintAll(startStr, bx, by, 1, 6)
 
   -- tiny map
   sx,sy=40,38
@@ -282,6 +290,34 @@ function titledraw()
     print('➡️',100,2+56+yy,0)
     print('➡️',100,2+55+yy,7)
   end
+
+  -- top 3 scores
+  n1='1'..' '..hs[1].name..' '..hs[1].score
+  n2='2'..' '..hs[2].name..' '..hs[2].score
+  n3='3'..' '..hs[3].name..' '..hs[3].score
+  y=98
+  inc=7
+  
+  -- #1
+  print(n1, hcenter(n1)+1, y+1, 5)
+  print(n1, hcenter(n1), y, 10)
+  clip(0,y,128,1)
+  print(n1, hcenter(n1), y, 9)
+  clip()
+  
+  -- #2
+  print(n2, hcenter(n2)+1, y+inc+1, 5)
+  print(n2, hcenter(n2), y+inc, 6)
+  clip(0,y+inc,128,1)
+  print(n2, hcenter(n2), y+inc, 5)
+  clip()
+  
+  -- #3
+  print(n3, hcenter(n3)+1, y+2*inc+1, 5)
+  print(n3, hcenter(n3), y+2*inc, 9)
+  clip(0,y+2*inc,128,1)
+  print(n3, hcenter(n3), y+2*inc, 4)
+  clip()
 end
 
 function draw_tiny_map(num,atx,aty)
@@ -1012,6 +1048,12 @@ function insert_high_score(level_num, slot, new_score, name)
 			break
 		end
 		write_score(level_num, scores[i].score, scores[i].name, i)
+	end
+end
+
+function reset_high_scores()
+	for i=0,255 do
+		poke(0x5e00+i, 0)
 	end
 end
 
