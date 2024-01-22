@@ -810,12 +810,16 @@ function highscoredraw()
 	print(title, hcenter(title), 5)
 	for i,s in ipairs(high_scores) do
 		if s.name=='' then n='___' else n=s.name end
+		sc=''..i..' '..n..' '..s.score
 		if i==1 then
-			print_1st_place(''..i..' '..n..' '..s.score, 45, 10+(7*i))
+			print_1st_place(sc, 45, 10+(7*i))
 		elseif i==2 then
-			print_2nd_place(''..i..' '..n..' '..s.score, 45, 10+(7*i))
+			print_2nd_place(sc, 45, 10+(7*i))
+		elseif i==3 then
+			print_3rd_place(sc, 45, 10+(7*i))
+		else
+			print(sc, 45, 10+(7*i),7)
 		end
-		print(''..i..' '..n..' '..s.score, 45, 10+(7*i))
 	end
 
 	local text=''..score
@@ -1070,7 +1074,7 @@ end
 -- c color, hc highlight color
 function print_highlight_text(s,x,y,c,hc)
 	print(s, x, y, c) -- color
-	clip(x,y,x+4*#s,2)
+	clip(x,y,x+4*#s,1)
 	print(s, x, y, hc) -- highlight
 	clip()
 end
