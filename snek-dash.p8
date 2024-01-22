@@ -32,6 +32,7 @@ player={
   l=4, -- length
   c=8, -- color
   dir=1, -- u=1 l=2 d=3 r=4
+  dashing=false,
   dashframe=0, -- 0 = not dashing, >0 = dashing
   -- frame counter for after dash recharge animation
   dashreloadframe=0
@@ -53,8 +54,8 @@ snakepalettes2 = {
  [4]={name='snakorpion', p={10,10,10,10,10,10,10,10,0,0}},
  [5]={name='rainbow', p={7,7,14,14,8,8,9,9,10,10,11,11,3,3,12,12,2,2}}
 }
-snakepalette=snakepalettes.plain
-snakepalette=snakepalettes.rainbow
+cur_pal=2
+snakepalette=snakepalettes2[cur_pal].p
 
 -- player dead effect
 circles = {}
@@ -97,6 +98,7 @@ play_music=false
 
 function _init()
   cartdata('tm-snek-dash')
+  -- reset_high_scores()
   if (skiptitle==1) scene=1
 
   if (scene==0) then
@@ -139,7 +141,7 @@ function _draw()
   end
 
   addDebug('cpu '..stat(1))
-  drawDebug(1,-5)
+  drawDebug(1,110)
 end
 
 
@@ -155,7 +157,7 @@ end
 function titleupdate()
 	if (slt<4) slt+=1
 
-  --lr
+	--lr
 	if btnp(0) then
 		if curLevel>1 then
 			curLevel-=1
@@ -176,10 +178,15 @@ function titleupdate()
 
   --ud
   if btnp(2) then
-    snakepalette=snakepalettes.plain
+  	cur_pal-=1
   elseif btnp(3) then
-    snakepalette=snakepalettes.texascoralsnake
+  	cur_pal+=1
   end
+  if (cur_pal<1) cur_pal=1
+  if (cur_pal>#snakepalettes2) cur_pal=#snakepalettes2
+  log('cur_pal '..cur_pal)
+  log('#snakepalettes2 '..#snakepalettes2)
+  snakepalette=snakepalettes2[cur_pal].p
 
   -- o
 	if btnp(4) then
@@ -355,6 +362,7 @@ function gameinit()
   player.h={}
   player.l=15
   player.dead=false
+  player.dashing=false
   player.dashreloadframe=0
   scene=1
   timer=0
@@ -445,14 +453,14 @@ function gameupdate()
 
   crumbsupdate()
 
-  -- score
-  if timer%30==0 then
-    score+=1
-  end
-
   -- combo
   if comboTimer > 0 then
     comboTimer+=1
+
+    if timer%30==0 then
+	    score+=1
+	end
+
     if comboTimer > COMBO_THRESHOLD then
       comboEnd(comboNum)
       comboNum=0
@@ -595,7 +603,11 @@ function collectfood(foodlist, food)
   spawncrumbs(food.x,food.y,player.dir)
   sfx(2)
   del(foodlist,food)
-  score+=100
+  if player.dashing then
+	  score+=20
+  else
+	  score+=10
+  end
   player.l += 20
   spawnfood(1)
   eatmessage()
@@ -818,7 +830,7 @@ function highscoredraw()
 		elseif i==3 then
 			print_3rd_place(sc, 45, 10+(7*i))
 		else
-			print(sc, 45, 10+(7*i),7)
+			print(sc, 45, 10+(7*i),5)
 		end
 	end
 
@@ -827,9 +839,7 @@ function highscoredraw()
 	x2=100
 	y1=80
 	y2=86
-	rectfill(x1,y1,x2,y2,8)
-	rect(x1,y1-1,x2,y2+1,3)
-	print(text,hcenter(text),vcenter(text)-0,11)
+	print(score,hcenter(text),vcenter(text)-0,11)
 end
 
 
@@ -854,7 +864,9 @@ function playercontrol()
       for i=1,dashamount do
         local newpos = {x=player.x,y=(dashamount+player.y)-i}
         add(player.h,newpos)
+        player.dashing=true
         playerfoodcollide(food,newpos)
+        player.dashing=false
     end
 
     -- left
@@ -863,7 +875,9 @@ function playercontrol()
       for i=1,dashamount do
         local newpos = {x=(dashamount+player.x)-i,y=player.y}
         add(player.h,newpos)
+        player.dashing=true
         playerfoodcollide(food,newpos)
+        player.dashing=false
       end
 
     -- down
@@ -872,7 +886,9 @@ function playercontrol()
       for i=1,dashamount do
         local newpos = {x=player.x,y=(player.y-dashamount)+i}
         add(player.h,newpos)
+        player.dashing=true
         playerfoodcollide(food,newpos)
+        player.dashing=false
       end
 
     -- right
@@ -881,7 +897,9 @@ function playercontrol()
       for i=1,dashamount do
         local newpos = {x=(player.x-dashamount)+i,y=player.y}
         add(player.h,newpos)
+        player.dashing=true
         playerfoodcollide(food,newpos)
+        player.dashing=false
       end
     end
 
