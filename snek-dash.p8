@@ -96,6 +96,7 @@ shakeTime=6
 play_music=false
 
 function _init()
+	cartdata('tm-snek-dash')
   if (skiptitle==1) scene=1
 
   if (scene==0) then
@@ -400,14 +401,14 @@ function gameupdate()
   end
 
   if dead==true then
-    gameover()
+    kill_player()
     return
   end
 
   -- self
   for v in all(player.h) do
     if (player.x == v.x and player.y == v.y) then
-     gameover()
+     kill_player()
      return
     end
   end
@@ -689,69 +690,9 @@ end
 
 
 -- agameover & dead
-function gameover()
+function kill_player()
   player.dead=true 
   deadinit()
-end
-
-function gameoverinit()
-  scene=2
-  timer=0
-  music(-1)
-
-  rectfill(0,0,screenwidth,screenheight,8)
-  local text='u died fool'
-  print(text,hcenter(text),vcenter(text)-20,7)
-
-  finalScoreDraw()
-
-  local text='🅾️ try again'
-  print(text,hcenter(text),vcenter(text)+22,7)
-  local text='❎ level select'
-  print(text,hcenter(text),vcenter(text)+30,7)
-end
-
-function gameoverupdate()
-  timer+=1
-  if btn(5) then 
-    sfx(8)
-    scene=0
-    titleinit()
-  elseif btn(4) then
-    sfx(7)
-    gameinit()
-  end
-end
-
-function gameoverdraw()
-  local pad=20
-
-  if timer > 70 then
-    -- for x=1,1950 do
-    --   local xx=flr(rnd(screenwidth))
-    --   local yy=flr(rnd(screenheight-pad))
-    --   local cc=pget(xx,yy)
-    --   if (cc==7 or flr(rnd(10))<=3) then
-    --     -- change to drip left/right at first
-    --     if timer<180 then
-    --       -- drop left/right
-    --       if (flr(rnd(100))==5) then xx+=1 elseif(flr(rnd(100))==10) then xx-=1 end
-    --       -- drip darker from top
-    --       if (flr(rnd(50)) == 10) then pset(flr(rnd(screenwidth+1)),0,2) end
-    --     -- change to only become red after
-    --     elseif timer < 360 then
-    --       if (flr(rnd(100)) == 2) then
-    --         pset(flr(rnd(screenwidth+1)),flr(rnd(screenheight)),8)
-    --       end
-    --     -- black drips from top
-    --     else
-    --       if (flr(rnd(100))%5==0) then pset(flr(rnd(screenwidth)),0,0) end
-    --     end
-    --     pset(xx,yy+1,cc)
-    --   end
-    -- end
-  finalScoreDraw()
-  end
 end
 
 function deadinit()
@@ -766,11 +707,11 @@ function deadupdate()
 
 	if #player.h > 1 then
 		add(circles, {
-      x=player.h[#player.h].x, 
-      y=player.h[#player.h].y, 
-      r=frnd(4)+2, 
-      c=snakepalette[#player.h%(#snakepalette)+1]
-    })
+		  x=player.h[#player.h].x, 
+		  y=player.h[#player.h].y, 
+		  r=frnd(4)+2, 
+		  c=snakepalette[#player.h%(#snakepalette)+1]
+		})
 		delete_cnt = 1 + (flr(timer/5)*flr(timer/5)) / 8
 
 		for i=0,delete_cnt do
@@ -810,12 +751,54 @@ function deaddraw()
 	circles={}
 end
 
-function finalScoreDraw()
+function gameoverinit()
+  scene=2
+  timer=0
+  music(-1)
+
+  slot=get_high_score_slot(curLevel, score)
+  if slot>0 then
+  	name=chr(97+frnd(122-97))..chr(97+frnd(122-97))..chr(97+frnd(122-97))
+  	insert_high_score(curLevel, slot, score, name)
+  end
+  high_scores=read_scores(curLevel)
+end
+
+
+function gameoverupdate()
+  timer+=1
+  if btn(5) then 
+    sfx(8)
+    scene=0
+    titleinit()
+  elseif btn(4) then
+    sfx(7)
+    gameinit()
+  end
+end
+
+function gameoverdraw()
+  cls()
+  highscoredraw()
+  local text='🅾️ try again'
+  print(text,hcenter(text),80,7)
+  local text='❎ level select'
+  print(text,hcenter(text),86,7)
+end
+
+function highscoredraw()
+	title=levels[curLevel].name..' high scores'
+	print(title, hcenter(title), 5)
+	for i,s in ipairs(high_scores) do
+		if s.name=='' then n='___' else n=s.name end
+		print(''..i..' '..n..' '..s.score, 45, 10+(7*i))
+	end
+
 	local text=''..score
 	x1=28
 	x2=100
-	y1=60
-	y2=66
+	y1=80
+	y2=86
 	rectfill(x1,y1,x2,y2,8)
 	rect(x1,y1-1,x2,y2+1,3)
 	print(text,hcenter(text),vcenter(text)-0,11)
@@ -958,6 +941,78 @@ end
 
 function wavyPrintAll(s,x,y,h,c)
   print(s,x,y + h*sin((1.2*x-timer*1.4)*(3.1459/180)), c)
+end
+
+
+-- ahighscore
+-- high score format
+-- every 25 bytes in cartdata() is a level
+-- bytes
+-- 	1,2 	16-bit score (0-32767)
+-- 	3,4,5	name, 3 chr 	
+--
+-- level num & score slot are 1-based
+--
+-- write chars with ord() (char to code)
+function write_score(level_num, score, name, slot)
+	log('writing score '..score..' '..name..' to slot '..slot)
+	local base=0x5e00
+	local level_start_addr=base+25*(level_num-1)
+	local slot_addr=(slot-1)*5
+	poke2(level_start_addr+slot_addr, score)
+	poke(level_start_addr+slot_addr+2, ord(name,1), ord(name,2), ord(name,3))
+end
+
+-- level num & score slot are 1-based
+-- returns table of scores for level 
+-- { 1={name,score}, 2={name,score}, ...}
+-- reads chars with chr() (code to char)
+function read_scores(level_num)
+	log('reading scores for level '..level_num)
+	local base=0x5e00
+	local level_start_addr=base+25*(level_num-1)
+	local highscores={}
+	for i=0,4 do
+		local slot_addr=5*i
+		local score=peek2(level_start_addr+slot_addr)
+		local name=chr(peek(level_start_addr+slot_addr+2))..chr(peek(level_start_addr+slot_addr+3))..chr(peek(level_start_addr+slot_addr+4))
+		if name==chr(0)..chr(0)..chr(0) then 
+			name=''
+		end
+		highscores[i+1]={score=score, name=name}
+	end
+	return highscores
+end
+
+-- checks if score is a high score for level num
+-- if so, returns score slot it goes in
+-- otherwise, returns -1
+function get_high_score_slot(level_num, new_score)
+	log('checking if '..new_score..' is a high score')
+	local scores=read_scores(level_num)
+	for i=1,#scores do
+		local cur_score=scores[i].score
+		if new_score>cur_score then
+			log(new_score..' ('..cur_score..') is a new high score in slot '..i)
+			return i
+		end
+	end
+	return -1
+end
+
+function insert_high_score(level_num, slot, new_score, name)
+	local scores=read_scores(level_num)
+
+	log('new high score name '..name..' slot '..slot..' new score '..new_score)
+	add(scores, {name=name,score=new_score}, slot)
+
+	for i=1,#scores do
+		if i>5 then
+			log('break')
+			break
+		end
+		write_score(level_num, scores[i].score, scores[i].name, i)
+	end
 end
 
 
