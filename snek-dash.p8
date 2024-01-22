@@ -96,7 +96,7 @@ shakeTime=6
 play_music=false
 
 function _init()
-	cartdata('tm-snek-dash')
+  cartdata('tm-snek-dash')
   if (skiptitle==1) scene=1
 
   if (scene==0) then
@@ -298,26 +298,9 @@ function titledraw()
   y=98
   inc=7
   
-  -- #1
-  print(n1, hcenter(n1)+1, y+1, 5)
-  print(n1, hcenter(n1), y, 10)
-  clip(0,y,128,1)
-  print(n1, hcenter(n1), y, 9)
-  clip()
-  
-  -- #2
-  print(n2, hcenter(n2)+1, y+inc+1, 5)
-  print(n2, hcenter(n2), y+inc, 6)
-  clip(0,y+inc,128,1)
-  print(n2, hcenter(n2), y+inc, 5)
-  clip()
-  
-  -- #3
-  print(n3, hcenter(n3)+1, y+2*inc+1, 5)
-  print(n3, hcenter(n3), y+2*inc, 9)
-  clip(0,y+2*inc,128,1)
-  print(n3, hcenter(n3), y+2*inc, 4)
-  clip()
+  print_1st_place(n1, hcenter(n1), y)
+  print_2nd_place(n2, hcenter(n2), y+inc)
+  print_3rd_place(n3, hcenter(n3), y+2*inc)
 end
 
 function draw_tiny_map(num,atx,aty)
@@ -827,6 +810,11 @@ function highscoredraw()
 	print(title, hcenter(title), 5)
 	for i,s in ipairs(high_scores) do
 		if s.name=='' then n='___' else n=s.name end
+		if i==1 then
+			print_1st_place(''..i..' '..n..' '..s.score, 45, 10+(7*i))
+		elseif i==2 then
+			print_2nd_place(''..i..' '..n..' '..s.score, 45, 10+(7*i))
+		end
 		print(''..i..' '..n..' '..s.score, 45, 10+(7*i))
 	end
 
@@ -1065,6 +1053,26 @@ function table_key_count(t)
     c+=1
   end
   return c
+end
+
+function print_1st_place(s,x,y)
+	print_highlight_text(s,x,y,10,9)
+end
+
+function print_2nd_place(s,x,y)
+	print_highlight_text(s,x,y,6,5)
+end
+
+function print_3rd_place(s,x,y)
+	print_highlight_text(s,x,y,9,4)
+end
+
+-- c color, hc highlight color
+function print_highlight_text(s,x,y,c,hc)
+	print(s, x, y, c) -- color
+	clip(x,y,x+4*#s,2)
+	print(s, x, y, hc) -- highlight
+	clip()
 end
 
 function comictext(s,x,y)
