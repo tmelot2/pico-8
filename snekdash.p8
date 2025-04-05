@@ -10,6 +10,11 @@ __lua__
 -- flags
 -- 0 wall
 -- 1 bg tile, appears in tiny maps
+-- 2 spawner tile
+
+-- tile pages
+-- 0 art
+-- 3 copies of background tiles that are flagged as spawners
 
 -- [ ] add level start countdown (use scaling text?)
 -- [ ] add level select flourish & short delay w sound
@@ -621,8 +626,6 @@ function spawnplayer()
     spawnTile=spawners[frnd(#spawners)+1]
     player.x=spawnTile.x * 8
     player.y=spawnTile.y * 10
-    log("SPAWN AT A SPAWNER TILE "..spawnTile.x..','..spawnTile.y)
-    log("which is screen "..player.x..','..player.y)
     return
   end
 
@@ -1087,7 +1090,6 @@ function insert_high_score(level_num, slot, new_score, name)
 
 	for i=1,#scores do
 		if i>5 then
-			log('break')
 			break
 		end
 		write_score(level_num, scores[i].score, scores[i].name, i)
