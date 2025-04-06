@@ -800,6 +800,9 @@ end
 function deadupdate()
 	timer+=1
 
+  maxplayerh=max(maxplayerh,#player.h)
+  delete_cnt=maxplayerh/120
+
 	if #player.h > 1 then
 		add(circles, {
 		  x=player.h[#player.h].x, 
@@ -807,7 +810,6 @@ function deadupdate()
 		  r=frnd(4)+2, 
 		  c=snakepalette[#player.h%(#snakepalette)+1]
 		})
-		delete_cnt = 1 + (flr(timer/5)*flr(timer/5)) / 8
 
 		for i=0,delete_cnt do
 			del(player.h,player.h[#player.h])
@@ -837,7 +839,9 @@ function deaddraw()
   		ny=rndneg()*2+c.r + flr(rnd(len)*sin(rnd(1)))
   		bigger = flr(rnd(10)) > 7
   		if bigger then size = 2 else size = 1 end
-  		circfill(c.x+nx, c.y+ny, size, c.c)
+  		circfill(c.x+nx, c.y+ny, size+2, 0)
+      circfill(c.x+nx, c.y+ny, size+1, 7)
+      circfill(c.x+nx, c.y+ny, size, c.c)
   		if flr(rnd(10) > 8) then
   			line(c.x-0.1*nx, c.y-0.1*ny, c.x+nx,c.y+ny, c.c)
   		end
