@@ -40,5 +40,13 @@ Polish ideas
 	Damage numbers
 	Different food
 
+Tech
+	INFINITE CRUMBS
+		draw crumbs layer, then copy screen to sprite sheet
+		do it on a frame when no crumbs animating
+		snapshot every 200 frames or something
+		can draw just crumbs?
+			OOH, split out render crumbs or reorder draw calls & snapshot before UI & player are rendered
+
 Bugs
 	Can dash land in wall and not die...turn into secret?

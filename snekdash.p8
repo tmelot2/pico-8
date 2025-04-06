@@ -58,6 +58,8 @@ snakepalette=snakepalettes[cur_pal].p
 circles = {}
 
 -- game 
+-- scenes
+-- 4 title to game transition
 scene=0
 timer=0
 score=0
@@ -126,6 +128,10 @@ function _update()
 
   elseif scene==3 then
   	deadupdate()
+
+  elseif scene==4 then
+    togameupdate()
+
   end
 end
 
@@ -138,6 +144,8 @@ function _draw()
    gameoverdraw()
   elseif scene==3 then
    deaddraw()
+  elseif scene==4 then
+    togamedraw()
   end
 
   -- addDebug('cpu '..stat(1))
@@ -188,8 +196,8 @@ function titleupdate()
 
   -- o
 	if btnp(4) then
-	sfx(7)
-		gameinit()
+  	sfx(7)
+    togameinit()
 	end
 end
 
@@ -305,6 +313,26 @@ function titledraw()
   print_1st_place(n1, hcenter(n1), y)
   print_2nd_place(n2, hcenter(n2), y+inc)
   print_3rd_place(n3, hcenter(n3), y+2*inc)
+end
+
+-- atogame: transition from title to game
+function togameinit()
+  scene=4
+  t=15
+end
+
+function togameupdate()
+  t-=1
+  if t==0 then
+    gameinit()
+  end
+end
+
+function togamedraw()
+  gradient={7,7,6,5,1,1,0,0}
+  percent=1-t/15
+  index=flr(#gradient*percent)
+  rectfill(0,0,128,128,gradient[index+1])
 end
 
 function draw_tiny_map(num,atx,aty)
@@ -960,8 +988,7 @@ function eatmessage()
     'woo!',
     'my favorite',
     'farm fresh',
-    'wait wut',
-    'i <3 pizza'
+    'whut',
   }
   messageupdate(msgs[frnd(#msgs)+1], 'shake')
 end
@@ -974,6 +1001,7 @@ function dasheatmessage()
     'omg',
     'oooommmmgggggg',
     'wow',
+    '<3 fruit',
     'meaningwave exists!'
   }
   messageupdate(msgs[frnd(#msgs)+1], 'shakeHard')
