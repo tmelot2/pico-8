@@ -170,7 +170,7 @@ function titleupdate()
 		if curLevel>1 then
 			curLevel-=1
 			hs=read_scores(curLevel)
-			sfx(6) 
+			sfx(6)
 			slt=0
 			dir=0
 		end
@@ -213,10 +213,10 @@ function titledraw()
       if (x+y)%2==0 then c=1 else c=3 end
       x1=(-timer/speed%w)+x*w
       y1=(-timer/speed%w)+y*w
-      
+
       x1+=abs(13*cos((timer+130)/270)+2) + 4*cos(timer/400)
       y1+=3*sin(timer/140)+1
-      
+
       rectfill(x1,y1, x1+w,y1+w, c)
       -- rect(x1,y1, x1+w,y1+w, 2)
     end
@@ -286,7 +286,7 @@ function titledraw()
 	  yy=1
 	  shadow=false
   end
-  if show_left then 
+  if show_left then
   	  if (shadow) print('⬅️',20,55+yy+4,1)
 	  print('⬅️',19,2+56+yy,0)
     print('⬅️',21,2+55+yy,0)
@@ -309,7 +309,7 @@ function titledraw()
   n3='3'..' '..hs[3].name..' '..hs[3].score
   y=98
   inc=7
-  
+
   print_1st_place(n1, hcenter(n1), y)
   print_2nd_place(n2, hcenter(n2), y+inc)
   print_3rd_place(n3, hcenter(n3), y+2*inc)
@@ -350,7 +350,7 @@ function draw_tiny_map(num,atx,aty)
   rect(atx-1,aty-1, 1+atx+(w-1/2)*size+(w-1/2)*pad, 1+aty+(h-1/2)*size+(h-1/2)*pad, 1)
   -- bg
   rectfill(atx,aty, atx+(w-1/2)*size+(w-1/2)*pad, aty+(h-1/2)*size+(h-1/2)*pad, 0)
-  
+
   for x=0,w-1 do
     for y=0,h-1 do
       tile=mget(map.mx+x, map.my+y)
@@ -358,15 +358,15 @@ function draw_tiny_map(num,atx,aty)
       is_bg=fget(tile,1)
       if is_wall then
         c=15
-      elseif is_bg then 
+      elseif is_bg then
         c=2
-      else 
-        c=1 
+      else
+        c=1
       end
       rect(atx+(x*size)+(x*pad), aty+(y*size)+(y*pad), atx+(x*size)+size+(x*pad), aty+(y*size)+size+(y*pad), c)
     end
   end
-  
+
   total_w+=((1+size)*w) + (pad-1)*w
   total_h+=((1+size)*h) + (pad-1)*h
 
@@ -572,7 +572,7 @@ function spawnfood(c)
 	    f=fget(mget(wx,wy))
 	    wall=f==1
 	until wall==false
-		
+
 	half_tile=4
 	tilex=rx*8 + half_tile + frnd(4) * rndneg()
 	-- +4 (along with half_tile) offsets from top status bar
@@ -786,7 +786,7 @@ end
 
 -- agameover & dead
 function kill_player()
-  player.dead=true 
+  player.dead=true
   deadinit()
 end
 
@@ -803,11 +803,12 @@ function deadupdate()
   maxplayerh=max(maxplayerh,#player.h)
   delete_cnt=maxplayerh/120
 
-	if #player.h > 1 then
+	if #player.h > 0 then
+    log('player.h left = '..#player.h)
 		add(circles, {
-		  x=player.h[#player.h].x, 
-		  y=player.h[#player.h].y, 
-		  r=frnd(4)+2, 
+		  x=player.h[#player.h].x,
+		  y=player.h[#player.h].y,
+		  r=frnd(4)+2,
 		  c=snakepalette[#player.h%(#snakepalette)+1]
 		})
 
@@ -866,7 +867,7 @@ end
 
 function gameoverupdate()
   timer+=1
-  if btn(5) then 
+  if btn(5) then
     sfx(8)
     scene=0
     titleinit()
@@ -880,14 +881,22 @@ function gameoverdraw()
   cls()
   highscoredraw()
   local text='🅾️ try again'
-  print(text,hcenter(text)-7,80,7)
+  wavyPrintAll(text,hcenter(text)-7,80,1,7)
   local text='❎ level select'
-  print(text,hcenter(text)+4,88,7)
+  wavyPrintAll(text,hcenter(text)+4,88,1,7)
 end
 
 function highscoredraw()
+  t+=1
 	title=levels[curLevel].name..' high scores'
-	print(title, hcenter(title), 5)
+  colorpal={8,9,10,11,12,13,14,15}
+  for i=1,#title do
+    onechar=sub(title,i,i)
+    color=flr((t/4 + i) % #colorpal + 1)
+    centerx=screenwidth/2
+    wavyPrint2(onechar,centerx-(#title*(4)/2)+4*i,5,2,colorpal[color])
+  end
+
 	for i,s in ipairs(high_scores) do
 		if s.name=='' then n='___' else n=s.name end
 		sc=''..i..' '..n..' '..s.score
@@ -1049,6 +1058,18 @@ function wavyPrint(s,x,y,h,c)
   for s in all(s) do
     print(s,10+x,y + h*sin((1.2*x-timer*1.4)*(3.1459/180)), c)
     -- comictext(s,x,y + h*sin((1.2*x-timer*1.4)*(3.1459/180)), c)
+    x+=5
+  end
+end
+
+-- Copy of wavyPrint1 without offset x.
+--
+-- Look, ok, this is dumb. For no reason, wavyPrint1 has 10+x as the x coord. This was prolly
+-- copy pasted from somewhere without ever realizing. If I fix, it breaks some text rendering.
+-- I could fix, but for now, wavyPrint2.
+function wavyPrint2(s,x,y,h,c)
+  for s in all(s) do
+    print(s,x,y + h*sin((1.2*x-timer*1.4)*(3.1459/180)), c)
     x+=5
   end
 end
