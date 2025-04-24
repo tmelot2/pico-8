@@ -314,9 +314,9 @@ function titledraw()
   y=98
   inc=7
 
-  print_1st_place(n1, hcenter(n1), y)
-  print_2nd_place(n2, hcenter(n2), y+inc)
-  print_3rd_place(n3, hcenter(n3), y+2*inc)
+  print_1st_place(n1, 4+sx, y)
+  print_2nd_place(n2, 4+sx, y+inc)
+  print_3rd_place(n3, 4+sx, y+2*inc)
 end
 
 -- atogame: transition from title to game
@@ -679,8 +679,11 @@ function collectfood(foodlist, food)
 	  foodpoints=10
   end
 
+  -- todo: add extra combo points
+  log("foodpoints = "..foodpoints..", comboNum = "..comboNum)
+  log("log foodpoints = "..log10(foodpoints))
   points=flr(foodpoints*log10(foodpoints*(comboNum+1)))
-  -- log('points = '..points)
+  log('points = '..points)
   score+=points
 
   player.l += 20
@@ -1245,24 +1248,6 @@ function reset_high_scores()
 	end
 end
 
-
--- autil
-function bits(s)
-	result=''
-	for i=7,0,-1 do
-		result ..= s >> i & 1
-	end
-	return result
-end
-
-function table_key_count(t)
-  c=0
-  for _,_ in pairs(t) do
-    c+=1
-  end
-  return c
-end
-
 function print_1st_place(s,x,y)
 	print_highlight_text(s,x,y,10,9)
 end
@@ -1341,25 +1326,6 @@ function addDebug(d)
   dbg[#dbg+1] = d
 end
 
-function log(s)
-  printh(s, 'log.txt')
-end
-
---- center align from: pico-8.wikia.com/wiki/centering_text
-function hcenter(s,extra_x)
-  -- string length time     s the
-  -- pixels in a char's width
-  -- cut in half and rounded down
-  ex = extra_x or 0
-  return (screenwidth / 2)-flr((#s*(4+ex))/2)
-end
-
-function vcenter(s)
-  -- string char's height
-  -- cut in half and rounded down
-  return (screenheight /2)-flr(5/2)
-end
-
 --- collision check
 function iscolliding(obj1, obj2)
   local x1 = obj1.x
@@ -1379,17 +1345,41 @@ function iscolliding(obj1, obj2)
   end
 end
 
--- shorthand for flr(rnd(x))
-function frnd(x)
-  return flr(rnd(x))
+-->8
+--util
+function bits(s)
+  result=''
+  for i=7,0,-1 do
+    result ..= s >> i & 1
+  end
+  return result
 end
 
-function rndneg()
-	if flr(rnd(2)) == 0 then
-		return 1
-	else
-		return -1
-	end
+function table_key_count(t)
+  c=0
+  for _,_ in pairs(t) do
+    c+=1
+  end
+  return c
+end
+
+function log(s)
+  printh(s, 'log.txt')
+end
+
+--- center align from: pico-8.wikia.com/wiki/centering_text
+function hcenter(s,extra_x)
+  -- string length time     s the
+  -- pixels in a char's width
+  -- cut in half and rounded down
+  ex = extra_x or 0
+  return (screenwidth / 2)-flr((#s*(4+ex))/2)
+end
+
+function vcenter(s)
+  -- string char's height
+  -- cut in half and rounded down
+  return (screenheight /2)-flr(5/2)
 end
 
 function log10(n)
@@ -1408,7 +1398,18 @@ function log10(n)
   return log10_table[flr(n)] + t
 end
 
+-- shorthand for flr(rnd(x))
+function frnd(x)
+  return flr(rnd(x))
+end
 
+function rndneg()
+  if flr(rnd(2)) == 0 then
+    return 1
+  else
+    return -1
+  end
+end
 __gfx__
 00000000077777700077000041111111000000000000000000000000000700000007000000070000000000100000000000000000000000000000000000000000
 00000000711111170711700041111111000000000000000000070000000700000007000000000000010000000000000001000000000000000000000000000000
