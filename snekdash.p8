@@ -308,15 +308,26 @@ function titledraw()
   end
 
   -- top 3 scores
-  n1='1'..' '..hs[1].name..' '..hs[1].score
-  n2='2'..' '..hs[2].name..' '..hs[2].score
-  n3='3'..' '..hs[3].name..' '..hs[3].score
+  n1=get_high_score_text(1, hs[1].name, hs[1].score)
+  n2=get_high_score_text(2, hs[2].name, hs[2].score)
+  n3=get_high_score_text(3, hs[3].name, hs[3].score)
+
   y=98
   inc=7
 
   print_1st_place(n1, 4+sx, y)
   print_2nd_place(n2, 4+sx, y+inc)
   print_3rd_place(n3, 4+sx, y+2*inc)
+end
+
+function get_high_score_text(slot, name, score)
+  if name == '' then
+    name='---'
+  end
+  if score == 0 then
+    score=''
+  end
+  return slot..' '..name..' '..score
 end
 
 -- atogame: transition from title to game
