@@ -51,8 +51,8 @@ snakepalettes = {
  [4]={name='snakorpion', p={10,10,0,0,10,10,0,0,10,10,10,10,0,0}},
  [5]={name='rainbow', p={7,7,14,14,8,8,9,9,10,10,11,11,3,3,12,12,2,2}}
 }
-cur_pal=2
-snakepalette=snakepalettes[cur_pal].p
+curPal=2
+snakepalette=snakepalettes[curPal].p
 
 -- player dead effect
 circles = {}
@@ -98,6 +98,9 @@ shakeTime=6
 
 -- audio
 play_music=false
+
+-- debug
+drawVerticalCenter=false
 
 function _init()
   cartdata('tm-snek-dash')
@@ -152,6 +155,16 @@ function _draw()
 
   -- addDebug('cpu '..stat(1))
   drawDebug(1,110)
+
+  if drawVerticalCenter then
+    -- for i=1,128 do
+    --   if i%4==0 then
+    --     x=i*4
+    --     line(x,0,x,128,7)
+    --   end
+    -- end
+    line(64,0,64,128,7)
+  end
 end
 
 
@@ -180,7 +193,7 @@ function titleupdate()
 		if curLevel<#levels then
 			curLevel+=1
 			hs=read_scores(curLevel)
-			sfx(6)
+			sfx(12)
 			slt=0
 			dir=1
 		end
@@ -188,13 +201,17 @@ function titleupdate()
 
   --ud
   if btnp(2) then
-  	cur_pal-=1
+    -- sfx(11)
+    if (curPal>1) sfx(11)
+  	curPal-=1
   elseif btnp(3) then
-  	cur_pal+=1
+    -- sfx(13)
+    if (curPal<#snakepalettes) sfx(13)
+  	curPal+=1
   end
-  if (cur_pal<1) cur_pal=1
-  if (cur_pal>#snakepalettes) cur_pal=#snakepalettes
-  snakepalette=snakepalettes[cur_pal].p
+  if (curPal<1) curPal=1
+  if (curPal>#snakepalettes) curPal=#snakepalettes
+  snakepalette=snakepalettes[curPal].p
 
   -- o
 	if btnp(4) then
@@ -206,8 +223,9 @@ end
 function titledraw()
   rectfill(0,0,screenwidth, screenheight, 1)
 
+  by=30
   -- scrolling bg
-  clip(0,34,128,60)
+  clip(0,by,128,64)
   w=30
   speed=2
   for x=-2, 1+screenwidth/w do
@@ -227,7 +245,7 @@ function titledraw()
 
   -- faded overlay
   fillp(▒)
-  rectfill(0,34,128,94,5)
+  rectfill(0,by,128,94,5)
   fillp()
   borderpal={}
   len=#snakepalette
@@ -240,23 +258,23 @@ function titledraw()
   -- border
   for x=0,128 do
     c=borderpal[#borderpal-(x+timer)%#borderpal]
-    pset(128-x,33,c)
-    pset(128-x,34,c)
+    pset(128-x,by,c)
+    pset(128-x,by+1,c)
     -- pset(128-x,32,c)
     -- pset(x,92,c)
-    pset(x,94,c)
-    pset(x,95,c)
+    pset(x,by+64,c)
+    pset(x,by+65,c)
   end
 
   local titletxt="snek dash!"
-  x=27
+  x=29
   y=9
   wavyPrint(titletxt, x, y, 2, 5)
   wavyPrint(titletxt, x+1, y+1, 3, 7)
 
   -- words
   local bx=40
-  local by=25
+  local by=21
   local byStr='BY TED MELOT'
   print(byStr, bx-1, by-1, 5)
   print(byStr, bx, by, 9)
@@ -273,7 +291,7 @@ function titledraw()
   wavyPrintAll(startStr, bx, by, 1, 6)
 
   -- tiny map
-  sx,sy=40,38
+  sx,sy=41,35
   if dir==0 then
 	sx-=1*(4-slt)
   elseif dir==1 then
@@ -285,26 +303,31 @@ function titledraw()
   shadow=true
   show_left=curLevel>1
   show_right=curLevel<#levels
+  bx=19
+  by=55
   yy=0
   if timer%50<7 then
 	  yy=1
 	  shadow=false
   end
+
   if show_left then
-  	  if (shadow) print('⬅️',20,55+yy+4,1)
-	  print('⬅️',19,2+56+yy,0)
-    print('⬅️',21,2+55+yy,0)
-    print('⬅️',20,2+54+yy,0)
-    print('⬅️',20,2+56+yy,0)
-    print('⬅️',20,2+55+yy,7)
+  	  if (shadow) print('⬅️',bx+1,by+yy+4,1)
+	  print('⬅️',bx,3+by+yy,0)
+    print('⬅️',bx+2,2+by+yy,0)
+    print('⬅️',bx+1,1+by+yy,0)
+    print('⬅️',bx+1,3+by+yy,0)
+    print('⬅️',bx+1,2+by+yy,7)
   end
+
+  bx=104
   if show_right then
-  	if (shadow) print('➡️',100,55+yy+4,1)
-    print('➡️',99,2+55+yy,0)
-    print('➡️',101,2+55+yy,0)
-    print('➡️',100,2+54+yy,0)
-    print('➡️',100,2+56+yy,0)
-    print('➡️',100,2+55+yy,7)
+  	if (shadow) print('➡️',bx+2,55+yy+4,1)
+    print('➡️',bx,2+by+yy,0)
+    print('➡️',bx+2,2+by+yy,0)
+    print('➡️',bx+1,1+by+yy,0)
+    print('➡️',bx+1,3+by+yy,0)
+    print('➡️',bx+1,2+by+yy,7)
   end
 
   -- top 3 scores
@@ -318,6 +341,21 @@ function titledraw()
   print_1st_place(n1, 4+sx, y)
   print_2nd_place(n2, 4+sx, y+inc)
   print_3rd_place(n3, 4+sx, y+2*inc)
+
+  -- levels
+  width=#levels*2
+  bx=hcenter("")-(width/2)
+  by=92
+  for i=1,#levels do
+    if i==curLevel then
+      pset(bx+2*i, by, 8)
+      pset(bx+2*i, by-1, 8)
+      pset(bx+2*i, by-2, 8)
+    else
+      pset(bx+2*i, by, 6)
+      pset(bx+2*i, by-1, 6)
+    end
+  end
 end
 
 function get_high_score_text(slot, name, score)
@@ -1724,11 +1762,14 @@ __sfx__
 00100000180701a070180701a07021070180001f0701d0701c0701c07018070180701807018070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0010000024040200402007020070200701f0701f0701f0701f0701f0701f0601f0601f0601e0601e0601e06000060000600007000000000000000000000000000000000000000000000000000000000000000000
 0103000018175181753017537175186401d640186301a6201d600040000200002000020000200002000020000100006000130001300011000100000e0000c0000b0000b0000c0000b0000a0000a0000a0000a000
-010200002905012030240002400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000200002455012030240002400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 010200002f05036040240002400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000200001b05016000000002400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0003000001250012500225009250172502c2503f2503c1503e1503855007200032000320003200032000320003200112000520005200052000a2000b2002b4000000000000000000000000000000000000000000
+00030000004400144007330103301b330273303d45002400004003850007200032000320003200032000320003200112000520005200052000a2000b2002b4000000000000000000000000000000000000000000
 000300001c45028450364501c4200c4101a4102e450234501945012450104501b3002930037300003000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000200002a55012030240002400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000200002255010030240002400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00020000285500f030240002400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __music__
 00 41424344
 00 01424344
