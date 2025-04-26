@@ -331,16 +331,16 @@ function titledraw()
   end
 
   -- top 3 scores
-  n1=get_high_score_text(1, hs[1].name, hs[1].score)
-  n2=get_high_score_text(2, hs[2].name, hs[2].score)
-  n3=get_high_score_text(3, hs[3].name, hs[3].score)
+  n1=getHighScoreText(1, hs[1].name, hs[1].score)
+  n2=getHighScoreText(2, hs[2].name, hs[2].score)
+  n3=getHighScoreText(3, hs[3].name, hs[3].score)
 
   y=98
   inc=7
 
-  print_1st_place(n1, 4+sx, y)
-  print_2nd_place(n2, 4+sx, y+inc)
-  print_3rd_place(n3, 4+sx, y+2*inc)
+  print1stplace(n1, 4+sx, y)
+  print2ndPlace(n2, 4+sx, y+inc)
+  print3rdPlace(n3, 4+sx, y+2*inc)
 
   -- levels
   width=#levels*2
@@ -358,7 +358,7 @@ function titledraw()
   end
 end
 
-function get_high_score_text(slot, name, score)
+function getHighScoreText(slot, name, score)
   if name == '' then
     name='---'
   end
@@ -1046,11 +1046,11 @@ function highscoredraw()
 		if s.name=='' then n='___' else n=s.name end
 		sc=''..i..' '..n..' '..s.score
 		if i==1 then
-			print_1st_place(sc, 45, by+(7*i))
+			print1stplace(sc, 45, by+(7*i))
 		elseif i==2 then
-			print_2nd_place(sc, 45, by+(7*i))
+			print2ndPlace(sc, 45, by+(7*i))
 		elseif i==3 then
-			print_3rd_place(sc, 45, by+(7*i))
+			print3rdPlace(sc, 45, by+(7*i))
 		else
 			print(sc, 45, by+(7*i),5)
 		end
@@ -1238,10 +1238,10 @@ end
 function write_score(level_num, score, name, slot)
 	-- log('writing score '..score..' '..name..' to slot '..slot)
 	local base=0x5e00
-	local level_start_addr=base+25*(level_num-1)
-	local slot_addr=(slot-1)*5
-	poke2(level_start_addr+slot_addr, score)
-	poke(level_start_addr+slot_addr+2, ord(name,1), ord(name,2), ord(name,3))
+	local levelStartAddr=base+25*(level_num-1)
+	local slotAddr=(slot-1)*5
+	poke2(levelStartAddr+slotAddr, score)
+	poke(levelStartAddr+slotAddr+2, ord(name,1), ord(name,2), ord(name,3))
 end
 
 -- level num & score slot are 1-based
@@ -1251,18 +1251,22 @@ end
 function read_scores(level_num)
 	-- log('reading scores for level '..level_num)
 	local base=0x5e00
-	local level_start_addr=base+25*(level_num-1)
+	local levelStartAddr=base+25*(level_num-1)
 	local highscores={}
 	for i=0,4 do
-		local slot_addr=5*i
-		local score=peek2(level_start_addr+slot_addr)
-		local name=chr(peek(level_start_addr+slot_addr+2))..chr(peek(level_start_addr+slot_addr+3))..chr(peek(level_start_addr+slot_addr+4))
+		local slotAddr=5*i
+		local score=peek2(levelStartAddr+slotAddr)
+		local name=get_name(levelStartAddr, slotAddr)
 		if name==chr(0)..chr(0)..chr(0) then 
 			name=''
 		end
 		highscores[i+1]={score=score, name=name}
 	end
 	return highscores
+end
+
+function get_name(levelStartAddr, slotAddr)
+  return chr(peek(levelStartAddr+slotAddr+2))..chr(peek(levelStartAddr+slotAddr+3))..chr(peek(levelStartAddr+slotAddr+4))
 end
 
 -- checks if score is a high score for level num
@@ -1272,9 +1276,9 @@ function get_high_score_slot(level_num, new_score)
 	-- log('checking if '..new_score..' is a high score')
 	local scores=read_scores(level_num)
 	for i=1,#scores do
-		local cur_score=scores[i].score
-		if new_score>cur_score then
-			-- log(new_score..' ('..cur_score..') is a new high score in slot '..i)
+		local curScore=scores[i].score
+		if new_score>curScore then
+			-- log(new_score..' ('..curScore..') is a new high score in slot '..i)
 			return i
 		end
 	end
@@ -1301,15 +1305,15 @@ function reset_high_scores()
 	end
 end
 
-function print_1st_place(s,x,y)
+function print1stplace(s,x,y)
 	print_highlight_text(s,x,y,10,9)
 end
 
-function print_2nd_place(s,x,y)
+function print2ndPlace(s,x,y)
 	print_highlight_text(s,x,y,6,5)
 end
 
-function print_3rd_place(s,x,y)
+function print3rdPlace(s,x,y)
 	print_highlight_text(s,x,y,9,4)
 end
 
