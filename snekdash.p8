@@ -1040,9 +1040,9 @@ function gameoverdraw()
   cls()
   highscoredraw()
   local text='🅾️ try again'
-  wavyPrintAll(text,hcenter(text)-7,80,1,7)
+  wavyPrintAll(text,hcenter(text)-7,94,1,7)
   local text='❎ level select'
-  wavyPrintAll(text,hcenter(text)+4,88,1,7)
+  wavyPrintAll(text,hcenter(text)+4,102,1,7)
 end
 
 function highscoredraw()
@@ -1065,14 +1065,14 @@ function highscoredraw()
 
   -- nested border, {inner, ..., outer}
   padding=12
-  border={9,10,5,7,0}
+  border={9,10,5,0}
   for i=#border,1,-1 do
-    rectfill(0+padding-i,0,128-padding+i,108+i,border[i])
+    rectfill(0+padding-i,padding-i,128-padding+i,116+i,border[i])
   end
-  rectfill(0+padding,0,128-padding,108,0)
+  rectfill(0+padding,padding,128-padding,116,0)
 
   -- stars
-  clip(12,0,128-11,108)
+  clip(12,12,128-12,108)
   for i=1,#stars do
     pset(stars[i].x, stars[i].y, stars[i].c)
   end
@@ -1086,11 +1086,11 @@ function highscoredraw()
     onechar=sub(title,i,i)
     color=flr((t/4 + i) % #colorpal + 1)
     centerx=screenwidth/2
-    wavyPrint2(onechar,centerx-(#title*(4)/2)+4*i,5,2,colorpal[color])
+    wavyPrint2(onechar,centerx-(#title*(4)/2)+4*i,19,2,colorpal[color])
   end
 
   -- scores
-  by=15
+  by=29
 	for i,s in ipairs(high_scores) do
 		if s.name=='' then n='___' else n=s.name end
 		sc=''..i..' '..n..' '..s.score
@@ -1111,7 +1111,13 @@ function highscoredraw()
 	x2=100
 	y1=80
 	y2=86
-	print(score,hcenter(text),vcenter(text)-0,11)
+	print(score,hcenter(text),80,11)
+
+  -- corner ornaments
+  spr(29,14,14,1,1,false,true)
+  spr(29,107,14,1,1,true,true)
+  spr(45,14,107,1,1,false,false)
+  spr(45,107,107,1,1,true,false)
 end
 
 
