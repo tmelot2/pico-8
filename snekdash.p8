@@ -169,12 +169,13 @@ end
 
 -- atitle
 function titleinit()
-	timer=80
+	timer=0
 	slt=5 -- select level timer, for anim
 	dir=0 --0 left, 1 right
-  scd={t=0, y=-5, v=2} -- snek color display
+  scd={t=0, y=-15, v=2} -- snek color display
 	if (play_music) music(3)
 	hs=read_scores(curLevel)
+  bigsnektimer=0
 end
 
 function titleupdate()
@@ -295,8 +296,23 @@ function titledraw()
   -- fillp(0x8421.8)
   -- rectfill(2,2,125,27,2)
   -- fillp()
-  dottedLine(3,2,125,2,2,10)
-  dottedLine(3,27,125,27,2,10)
+  -- dottedLine(3,2,125,2,2,10)
+  -- dottedLine(3,27,125,27,2,10)
+
+  -- big snek bg
+  bigsnektimer+=1
+  if bigsnektimer%275==0 then
+    bigsnektimer=0
+  end
+  w=3
+  h=7
+  c={2,5,13}
+  for i=-4,-40,-1 do
+    x=bigsnektimer+(i*3)
+    y=10+h*sin((i+bigsnektimer)/44)
+    cc=c[i%3+1]
+    rectfill(x,y,x+w,y+h,cc)
+  end
 
   local titletxt="snek dash!"
   x=29
@@ -393,7 +409,7 @@ function titledraw()
     end
   end
 
-  -- corner flourishes
+  -- corner ornaments
   spr(45,2,20,1,1,false,false) -- top half, bottom left
   spr(45,118,20,1,1,true,false) -- top half, bottom right
   spr(29,2,2,1,1,false,true) -- top half, top left
@@ -1072,7 +1088,7 @@ function highscoredraw()
   rectfill(0+padding,padding,128-padding,116,0)
 
   -- stars
-  clip(12,12,128-12,108)
+  clip(12,12,128-0,108)
   for i=1,#stars do
     pset(stars[i].x, stars[i].y, stars[i].c)
   end
@@ -1118,6 +1134,10 @@ function highscoredraw()
   spr(29,107,14,1,1,true,true)
   spr(45,14,107,1,1,false,false)
   spr(45,107,107,1,1,true,false)
+  spr(61,11,41)
+  spr(61,111,41)
+  spr(61,11,79)
+  spr(61,111,79)
 end
 
 
@@ -1285,7 +1305,7 @@ end
 -- every 25 bytes in cartdata() is a level
 -- bytes
 -- 	1,2 	16-bit score (0-32767)
--- 	3,4,5	name, 3 chr 	
+-- 	3,4,5	name, 3 chr
 --
 -- level num & score slot are 1-based
 --
@@ -1300,7 +1320,7 @@ function write_score(level_num, score, name, slot)
 end
 
 -- level num & score slot are 1-based
--- returns table of scores for level 
+-- returns table of scores for level
 -- { 1={name,score}, 2={name,score}, ...}
 -- reads chars with chr() (code to char)
 function read_scores(level_num)
@@ -1312,7 +1332,7 @@ function read_scores(level_num)
 		local slotAddr=5*i
 		local score=peek2(levelStartAddr+slotAddr)
 		local name=get_name(levelStartAddr, slotAddr)
-		if name==chr(0)..chr(0)..chr(0) then 
+		if name==chr(0)..chr(0)..chr(0) then
 			name=''
 		end
 		highscores[i+1]={score=score, name=name}
@@ -1402,7 +1422,7 @@ function comictext(s,x,y)
 		-- print(s[i], x+(i-1)*w-1, y+1, c)
 		-- --dr
 		-- print(s[i], x+(i-1)*w+1, y+1, c)
-		
+
 		--c
 		print(s[i], x+(i-1)*w, y, 0)
 	end
