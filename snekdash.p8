@@ -49,7 +49,8 @@ snakepalettes = {
  [2]={name='texas coral snek', p={0,0,0,10,8,8,8,10}},
  [3]={name='snek-zero', p={12,12,1,1,0,12,12,1,1,0,0}},
  [4]={name='snekorpion', p={10,10,0,0,10,10,0,0,10,10,10,10,0,0}},
- [5]={name='rainbow snek', p={7,7,14,14,8,8,9,9,10,10,11,11,3,3,12,12,2,2}}
+ [5]={name='rainbow snek', p={7,7,14,14,8,8,9,9,10,10,11,11,3,3,12,12,2,2}},
+ [6]={name='something snek', p={3,3,3,3,0,0,11,11,0,0}}
 }
 curPal=2
 snakepalette=snakepalettes[curPal].p
