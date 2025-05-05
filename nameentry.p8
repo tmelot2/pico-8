@@ -34,39 +34,26 @@ end
 
 -- dir=0 prev, 1 next
 function hseChangeLetter(dir)
-	curLetter=hse.curName[hse.curSlot]
+	letterIndex=hse.curNameIndexes[hse.curSlot]
 
-	-- get index of current letter
-	-- todo: update to just store index instead of letter, lookup name on submit
-	index=0
-	for i=1,#hse.letters do
-		if hse.letters[i]==curLetter then
-			index=i
-			break
-		end
-	end
-	if index==0 then
-		return
-	end
-
+	newLetterIndex=0
 	-- update letter
 	-- prev
 	if dir==0 then
-		newLetterIndex=index-1
+		newLetterIndex=letterIndex-1
 		-- wrap around for dat user friendliness
 		if newLetterIndex<1 then
 			newLetterIndex=#hse.letters
 		end
 	-- next
 	elseif dir==1 then
-		newLetterIndex=index+1
+		newLetterIndex=letterIndex+1
 		-- wrap around for dat user friendliness
 		if newLetterIndex>#hse.letters then
 			newLetterIndex=1
 		end
 	end
-	newLetter=hse.letters[newLetterIndex]
-	hse.curName[hse.curSlot]=newLetter
+	hse.curNameIndexes[hse.curSlot]=newLetterIndex
 end
 
 function hseDraw()
@@ -107,8 +94,9 @@ function hseDraw()
 		end
 
 		-- Print slot
+		letterIndex=hse.curNameIndexes[i]
 		print(
-			hse.curName[i],
+			hse.letters[letterIndex],
 			hse.x + ((i-1)*w),
 			hse.y,
 			7
@@ -118,8 +106,11 @@ end
 
 function hseFinish()
 	name=''
-	for i=1,#hse.curName do
-		name=name..hse.curName[i]
+	for i=1,#hse.curNameIndexes do
+		letterIndex=hse.curNameIndexes[i]
+		letter=hse.letters[letterIndex]
+		print('letter='..letter)
+		name=name..letter
 	end
 	log('Submitted name ['..name..']')
 end
@@ -134,7 +125,7 @@ hse={
 	-- letters={' ','a','b','c'},
 	slots=3,
 	curSlot=1,
-	curName={'a','b','c'},
+	curNameIndexes={2,3,4},
 	draw=hseDraw,
 	changeLetter=hseChangeLetter,
 	finish=hseFinish
