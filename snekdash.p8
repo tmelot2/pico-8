@@ -22,6 +22,8 @@ __lua__
 -- debug
 skiptitle=0
 dbg={}
+drawVerticalCenter=false
+drawHorizontalCenter=false
 
 -- screen
 screenwidth=127
@@ -60,6 +62,7 @@ circles = {}
 
 -- game 
 -- scenes
+-- 6 high score name entry
 -- 5 high score text bam / check
 -- 4 title to game transition
 scene=0
@@ -101,12 +104,9 @@ shakeTime=6
 -- audio
 play_music=false
 
--- debug
-drawVerticalCenter=true
-
 function _init()
   cartdata('tm-snek-dash')
-  reset_high_scores()
+  -- reset_high_scores()
 
   if (skiptitle==1) scene=1
 
@@ -114,8 +114,6 @@ function _init()
     titleinit()
   elseif scene==1 then
     gameinit()
-  elseif scene==5 then
-    checkHighScoreInit()
   end
 end
 
@@ -144,6 +142,9 @@ function _update()
   elseif scene==5 then
     checkHighScoreUpdate()
 
+  elseif scene==6 then
+    nameEntryUpdate()
+
   end
 end
 
@@ -160,19 +161,18 @@ function _draw()
     togamedraw()
   elseif scene==5 then
     checkHighScoreDraw()
+  elseif scene==6 then
+    nameEntryDraw()
   end
 
   -- addDebug('cpu '..stat(1))
   drawDebug(1,110)
 
   if drawVerticalCenter then
-    -- for i=1,128 do
-    --   if i%4==0 then
-    --     x=i*4
-    --     line(x,0,x,128,7)
-    --   end
-    -- end
     line(64,0,64,128,7)
+  end
+  if drawHorizontalCenter then
+    line(0,64,128,64,7)
   end
 end
 
@@ -1005,6 +1005,7 @@ function deaddraw()
 end
 
 function checkHighScoreInit()
+  scene=5
   slot=get_high_score_slot(curLevel, score)
   -- slot=1
   if score>0 and slot>0 then
@@ -1014,11 +1015,12 @@ function checkHighScoreInit()
       t=0,
       curIndex=1,
       text={
-        {str='     you',    d=18, scale=2},
+        {str='     you',    d=12, scale=2},
         {str='     got',    d=12, scale=2},
         {str='    a',     d=12, scale=3},
         {str='   high',   d=12, scale=3},
-        {str='score!', d=12, scale=5},
+        {str='score!', d=12, scale=5}
+        -- {str='score!', d=1, scale=5}
       }
     }
   else
@@ -1032,7 +1034,7 @@ function checkHighScoreUpdate()
     textBam.curIndex+=1
     textBam.t=0
     if textBam.curIndex > #textBam.text then
-      gameoverinit()
+      nameEntryInit()
     end
   end
 end
@@ -1050,14 +1052,146 @@ function checkHighScoreDraw()
   print(textBam.t, 5, 110, 7)
 end
 
+function nameEntryInit()
+  scene=6
+  -- high score entry
+  hse={
+    x=55,
+    y=62,
+    w=60,
+    h=30,
+    letters={' ','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9'},
+    -- letters={' ','a','b','c'},
+    slots=3,
+    curSlot=1,
+    curNameIndexes={2,3,4},
+    draw=hseDraw,
+    changeLetter=hseChangeLetter,
+    finish=hseFinish
+  }
+
+end
+
+function nameEntryUpdate()
+  -- left
+  if btnp(0) then
+    hse.curSlot = max(hse.curSlot-1, 1)
+  -- right
+  elseif btnp(1) then
+    hse.curSlot = min(hse.curSlot+1, hse.slots)
+  -- up
+  elseif btnp(2) then
+    hse.changeLetter(0)
+  -- down
+  elseif btnp(3) then
+    hse.changeLetter(1)
+  elseif btnp(4) or btnp(5) then
+    hse.finish()
+  end
+end
+
+-- dir=0 prev, 1 next
+function hseChangeLetter(dir)
+  letterIndex=hse.curNameIndexes[hse.curSlot]
+
+  newLetterIndex=0
+  -- update letter
+  -- prev
+  if dir==0 then
+    newLetterIndex=letterIndex-1
+    -- wrap around for dat user friendliness
+    if newLetterIndex<1 then
+      newLetterIndex=#hse.letters
+    end
+  -- next
+  elseif dir==1 then
+    newLetterIndex=letterIndex+1
+    -- wrap around for dat user friendliness
+    if newLetterIndex>#hse.letters then
+      newLetterIndex=1
+    end
+  end
+  hse.curNameIndexes[hse.curSlot]=newLetterIndex
+end
+
+function hseFinish()
+  name=''
+  for i=1,#hse.curNameIndexes do
+    letterIndex=hse.curNameIndexes[i]
+    letter=hse.letters[letterIndex]
+    name=name..letter
+  end
+  log('Submitted name ['..name..']')
+
+  gameoverinit()
+end
+
+function hseDraw()
+  cls(0)
+
+  -- rectfill(hse.x, hse.y, hse.w, hse.h, 7)
+  for i=1,hse.slots do
+    -- rectfill(hse.x,hse.y,hse.x + 6,hse.y + 10,9)
+
+    w=8
+
+    -- Slot selection border
+    -- todo: if i want animation for the box or buttons this wont work
+    -- instead ill read the current slot & interpolate the box position or something
+    -- maybe i could just make a little bump animation & that's good enough?
+    if i==hse.curSlot then
+      x=((i-1)*w)
+      rect(
+        hse.x + x - w/4,
+        hse.y - 2,
+        hse.x + x + w/2,
+        hse.y + 6,
+        6
+      )
+
+      -- Buttons
+      -- up
+      x=((i-1)*w)
+      print(
+        '⬆️',
+        hse.x + x - w/4,
+        hse.y - 10
+      )
+      -- down
+      print(
+        '⬇️',
+        hse.x + x - w/4,
+        hse.y + 10
+      )
+    end
+
+    -- Print slot
+    letterIndex=hse.curNameIndexes[i]
+    print(
+      hse.letters[letterIndex],
+      hse.x + ((i-1)*w),
+      hse.y,
+      7
+    )
+  end
+end
+
+function nameEntryDraw()
+  hse.draw()
+  local t='enter your name'
+  comictext(t, hcenter(t),44,7)
+  t='o submit'
+  comictext(t, hcenter(t),80,7)
+end
+
 function gameoverinit()
   scene=2
   timer=0
   music(-1)
 
   slot=get_high_score_slot(curLevel, score)
-  if slot>0 then
-  	name=chr(97+frnd(122-97))..chr(97+frnd(122-97))..chr(97+frnd(122-97))
+  if score>0 and slot>0 then
+  	-- name=chr(97+frnd(122-97))..chr(97+frnd(122-97))..chr(97+frnd(122-97))
   	insert_high_score(curLevel, slot, score, name)
   end
   high_scores=read_scores(curLevel)
@@ -1110,13 +1244,18 @@ function gameoverupdate()
     end
   end
 
-  if btn(5) then
-    sfx(8)
-    scene=0
-    titleinit()
-  elseif btn(4) then
-    sfx(7)
-    gameinit()
+  if timer > 10 then
+    if btn(5) then
+      sfx(8)
+      scene=0
+      titleinit()
+    elseif btn(4) then
+      -- o
+      sfx(7)
+      togameinit()
+      -- sfx(7)
+      -- gameinit()
+    end
   end
 end
 
@@ -1124,9 +1263,9 @@ function gameoverdraw()
   cls()
   highscoredraw()
   local text='🅾️ try again'
-  wavyPrintAll(text,hcenter(text)-7,101,1,7)
+  wavyPrintAll(text,hcenter(text)-7,99,1,7)
   local text='❎ level select'
-  wavyPrintAll(text,hcenter(text)+4,109,1,7)
+  wavyPrintAll(text,hcenter(text)+4,107,1,7)
 end
 
 function highscoredraw()
@@ -1195,7 +1334,7 @@ function highscoredraw()
 	x2=100
 	y1=80
 	y2=86
-	print(score,hcenter(text),80,11)
+	print(text,hcenter(text),80,11)
 
   -- corner ornaments
   spr(29,14,14,1,1,false,true)
