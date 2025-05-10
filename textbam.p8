@@ -35,7 +35,7 @@ function textBamDraw()
 	curText=textBam.text[textBam.curIndex]
 	scale_text(curText.str, 5, 34, 7, curText.scale)
 	print(textBam.t, 5, 110, 7)
-	end
+end
 
 function _init()
 	textBamInit()
