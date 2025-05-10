@@ -60,10 +60,11 @@ circles = {}
 
 -- game 
 -- scenes
+-- 5 high score text bam / check
 -- 4 title to game transition
 scene=0
 timer=0
-score=0
+score=10
 dashamount=20
 dashframes=20
 comboNum=0
@@ -101,11 +102,11 @@ shakeTime=6
 play_music=false
 
 -- debug
-drawVerticalCenter=false
+drawVerticalCenter=true
 
 function _init()
   cartdata('tm-snek-dash')
-  -- reset_high_scores()
+  reset_high_scores()
 
   if (skiptitle==1) scene=1
 
@@ -113,6 +114,8 @@ function _init()
     titleinit()
   elseif scene==1 then
     gameinit()
+  elseif scene==5 then
+    checkHighScoreInit()
   end
 end
 
@@ -138,6 +141,9 @@ function _update()
   elseif scene==4 then
     togameupdate()
 
+  elseif scene==5 then
+    checkHighScoreUpdate()
+
   end
 end
 
@@ -152,6 +158,8 @@ function _draw()
    deaddraw()
   elseif scene==4 then
     togamedraw()
+  elseif scene==5 then
+    checkHighScoreDraw()
   end
 
   -- addDebug('cpu '..stat(1))
@@ -967,7 +975,7 @@ function deadupdate()
 	else
 		pauseTimer += 1
 		if pauseTimer > 80 then
-			gameoverinit()
+			checkHighScoreInit()
 		end
 	end
 end
@@ -994,6 +1002,52 @@ function deaddraw()
   	end
 	end
 	circles={}
+end
+
+function checkHighScoreInit()
+  slot=get_high_score_slot(curLevel, score)
+  -- slot=1
+  if score>0 and slot>0 then
+    log('will do text bam')
+    scene=5
+    textBam={
+      t=0,
+      curIndex=1,
+      text={
+        {str='     you',    d=18, scale=2},
+        {str='     got',    d=12, scale=2},
+        {str='    a',     d=12, scale=3},
+        {str='   high',   d=12, scale=3},
+        {str='score!', d=12, scale=5},
+      }
+    }
+  else
+    gameoverinit()
+  end
+end
+
+function checkHighScoreUpdate()
+  textBam.t+=1
+  if textBam.t == textBam.text[textBam.curIndex].d then
+    textBam.curIndex+=1
+    textBam.t=0
+    if textBam.curIndex > #textBam.text then
+      gameoverinit()
+    end
+  end
+end
+
+function checkHighScoreDraw()
+  local t=textBam.t
+
+  if textBam.curIndex == 5 and (t == 1 or t == 4) then
+    cls(6)
+  else
+    cls(0)
+  end
+  curText=textBam.text[textBam.curIndex]
+  scale_text(curText.str, 5, 34, 7, curText.scale)
+  print(textBam.t, 5, 110, 7)
 end
 
 function gameoverinit()
@@ -1070,9 +1124,9 @@ function gameoverdraw()
   cls()
   highscoredraw()
   local text='🅾️ try again'
-  wavyPrintAll(text,hcenter(text)-7,94,1,7)
+  wavyPrintAll(text,hcenter(text)-7,101,1,7)
   local text='❎ level select'
-  wavyPrintAll(text,hcenter(text)+4,102,1,7)
+  wavyPrintAll(text,hcenter(text)+4,109,1,7)
 end
 
 function highscoredraw()
@@ -1125,13 +1179,13 @@ function highscoredraw()
 		if s.name=='' then n='___' else n=s.name end
 		sc=''..i..' '..n..' '..s.score
 		if i==1 then
-			print1stplace(sc, 45, by+(7*i))
+			print1stplace(sc, 49, by+(7*i))
 		elseif i==2 then
-			print2ndPlace(sc, 45, by+(7*i))
+			print2ndPlace(sc, 49, by+(7*i))
 		elseif i==3 then
-			print3rdPlace(sc, 45, by+(7*i))
+			print3rdPlace(sc, 49, by+(7*i))
 		else
-			print(sc, 45, by+(7*i),5)
+			print(sc, 49, by+(7*i),5)
 		end
 	end
 

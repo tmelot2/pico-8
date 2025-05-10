@@ -109,7 +109,6 @@ function hseFinish()
 	for i=1,#hse.curNameIndexes do
 		letterIndex=hse.curNameIndexes[i]
 		letter=hse.letters[letterIndex]
-		print('letter='..letter)
 		name=name..letter
 	end
 	log('Submitted name ['..name..']')
