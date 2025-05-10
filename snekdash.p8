@@ -979,16 +979,58 @@ function checkHighScoreInit()
   scene=5
   slot=get_high_score_slot(curLevel, score)
   if score>0 and slot>0 then
+    textBamMsg={
+      '      you',
+      '      got',
+      '    a',
+      '   high',
+      'score!',
+    }
+    textBamMsg={
+      '       a',
+      '    winner',
+      '   is',
+      '    a',
+      ' uuu!',
+    }
+    textBamMsg={
+      '      oh',
+      '      my',
+      '    god',
+      '   dat',
+      'score!',
+    }
+    textBamMsg={
+      '   where\'d',
+      '       i',
+      '    put',
+      '    my',
+      ' keys?'
+    }
+    textBamMsg={
+      '   most',
+      '   winners',
+      '   don\'t',
+      '    do',
+      ' drugs'
+    }
+    textBamMsg={
+      '     you',
+      '    only',
+      '    get',
+      '    one',
+      ' shot'
+    }
     scene=5
     textBam={
       t=0,
       curIndex=1,
       text={
-        {str='      you',    d=12, scale=2, sfx=14},
-        {str='      got',    d=12, scale=2, sfx=14},
-        {str='    a',     d=12, scale=3, sfx=14},
-        {str='   high',   d=12, scale=3, sfx=14},
-        {str='score!', d=12, scale=5, sfx=15}
+        {str=textBamMsg[1], d=12, scale=2, sfx=14},
+        {str=textBamMsg[2], d=12, scale=2, sfx=14},
+        {str=textBamMsg[3], d=12, scale=3, sfx=14},
+        {str=textBamMsg[4], d=12, scale=3, sfx=14},
+        {str=textBamMsg[5], d=12, scale=5, sfx=15}
       }
     }
     sfx(textBam.text[1].sfx)
