@@ -106,7 +106,7 @@ play_music=false
 
 function _init()
   cartdata('tm-snek-dash')
-  -- reset_high_scores()
+  reset_high_scores()
 
   if (skiptitle==1) scene=1
 
@@ -1009,26 +1009,29 @@ function checkHighScoreInit()
   slot=get_high_score_slot(curLevel, score)
   -- slot=1
   if score>0 and slot>0 then
-    log('will do text bam')
     scene=5
     textBam={
       t=0,
       curIndex=1,
       text={
-        {str='     you',    d=12, scale=2},
-        {str='     got',    d=12, scale=2},
-        {str='    a',     d=12, scale=3},
-        {str='   high',   d=12, scale=3},
-        {str='score!', d=12, scale=5}
+        {str='     you',    d=12, scale=2, sfx=14},
+        {str='     got',    d=12, scale=2, sfx=14},
+        {str='    a',     d=12, scale=3, sfx=14},
+        {str='   high',   d=12, scale=3, sfx=14},
+        {str='score!', d=12, scale=5, sfx=15}
         -- {str='score!', d=1, scale=5}
       }
     }
+    sfx(textBam.text[1].sfx)
   else
     gameoverinit()
   end
 end
 
 function checkHighScoreUpdate()
+  if textBam.t==0 then
+    sfx(textBam.text[textBam.curIndex].sfx)
+  end
   textBam.t+=1
   if textBam.t == textBam.text[textBam.curIndex].d then
     textBam.curIndex+=1
@@ -1048,8 +1051,27 @@ function checkHighScoreDraw()
     cls(0)
   end
   curText=textBam.text[textBam.curIndex]
-  scale_text(curText.str, 5, 34, 7, curText.scale)
-  print(textBam.t, 5, 110, 7)
+
+  local x=5
+  local y=34
+  local range=5
+  if textBam.t < 6 then
+    range=5
+  else
+    range=0
+  end
+  if frnd(2)==0 then
+    x+=frnd(range)
+  else
+    x-=frnd(range)
+  end
+  if frnd(2)==0 then
+    y+=frnd(range)
+  else
+    y-=frnd(range)
+  end
+
+  scale_text(curText.str, x, y, 7, curText.scale)
 end
 
 function nameEntryInit()
@@ -1057,7 +1079,7 @@ function nameEntryInit()
   -- high score entry
   hse={
     x=55,
-    y=62,
+    y=52,
     w=60,
     h=30,
     letters={' ','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9'},
@@ -1075,9 +1097,11 @@ end
 function nameEntryUpdate()
   -- left
   if btnp(0) then
+    sfx(17)
     hse.curSlot = max(hse.curSlot-1, 1)
   -- right
   elseif btnp(1) then
+    sfx(17)
     hse.curSlot = min(hse.curSlot+1, hse.slots)
   -- up
   elseif btnp(2) then
@@ -1086,6 +1110,9 @@ function nameEntryUpdate()
   elseif btnp(3) then
     hse.changeLetter(1)
   elseif btnp(4) or btnp(5) then
+    sfx(15)
+    sfx(15)
+    sfx(15)
     hse.finish()
   end
 end
@@ -1098,6 +1125,7 @@ function hseChangeLetter(dir)
   -- update letter
   -- prev
   if dir==0 then
+    sfx(16)
     newLetterIndex=letterIndex-1
     -- wrap around for dat user friendliness
     if newLetterIndex<1 then
@@ -1105,6 +1133,7 @@ function hseChangeLetter(dir)
     end
   -- next
   elseif dir==1 then
+    sfx(16)
     newLetterIndex=letterIndex+1
     -- wrap around for dat user friendliness
     if newLetterIndex>#hse.letters then
@@ -1179,9 +1208,10 @@ end
 function nameEntryDraw()
   hse.draw()
   local t='enter your name'
-  comictext(t, hcenter(t),44,7)
-  t='o submit'
-  comictext(t, hcenter(t),80,7)
+  comictext(t, hcenter(t),34,7)
+
+  t='🅾️  submit'
+  comictext(t, hcenter(t),70,7)
 end
 
 function gameoverinit()
@@ -2069,6 +2099,11 @@ __sfx__
 000200002a55012030240002400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000200002255010030240002400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00020000285500f030240002400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0002000004650026500575004750037200271001710017100a6000e600096000560004600086000a60009600027000170001700017000170000700007002b0002f00032000300002b00029000230001e0001b000
+00030000156500a750007500465003650036500264002640026400264002640026400274003640017400173002630026300163001630016200162001620016200172001620016200161001610006000061000600
+00010000245502e5502d5000050024500276002640021400244002240000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00010000195502e550045500440002400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000300003c750097503a7500d75033750117502c750157502675019750227501b750207501e7501d750207502075020750207502075020750207502075020750207500d4000f40013400114000f4000f4000f400
 __music__
 00 41424344
 00 01424344
