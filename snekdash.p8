@@ -16,9 +16,6 @@ __lua__
 -- 0 art
 -- 3 copies of background tiles that are flagged as spawners
 
--- [ ] add level start countdown (use scaling text?)
--- [ ] add level select flourish & short delay w sound
-
 -- debug
 skiptitle=0
 dbg={}
@@ -296,18 +293,9 @@ function titledraw()
     c=borderpal[#borderpal-(x+timer)%#borderpal]
     pset(128-x,by,c)
     pset(128-x,by+1,c)
-    -- pset(128-x,32,c)
-    -- pset(x,92,c)
     pset(x,by+64,c)
     pset(x,by+65,c)
   end
-
-  -- rectfill(2,2,125,27,5)
-  -- fillp(0x8421.8)
-  -- rectfill(2,2,125,27,2)
-  -- fillp()
-  -- dottedLine(3,2,125,2,2,10)
-  -- dottedLine(3,27,125,27,2,10)
 
   -- big snek bg
   bigsnektimer+=1
@@ -430,19 +418,6 @@ function titledraw()
       pset(bx+2*i, by-1, 6)
     end
   end
-
-  -- corner ornaments
-  -- spr(45,2,20,1,1,false,false) -- top half, bottom left
-  -- spr(45,118,20,1,1,true,false) -- top half, bottom right
-  -- spr(29,2,2,1,1,false,true) -- top half, top left
-  -- spr(29,118,2,1,1,true,true) -- top half, top right
-
-  -- spr(61,-1,12)
-  -- spr(61,122,12)
-  -- spr(45,2,98,1,1,false,true) -- bottom half, top left
-  -- spr(45,118,98,1,1,true,true) -- bottom half, top right
-  -- spr(29,2,33,1,1,false,true) -- top half, top left
-  -- spr(29,2,85,1,1,false,false) -- top half, bottom left
 end
 
 function getHighScoreText(slot, name, score)
@@ -819,7 +794,6 @@ function collectfood(foodlist, food)
 	  foodpoints=10
   end
 
-  -- todo: add extra combo points
   log("foodpoints = "..foodpoints..", comboNum = "..comboNum)
   log("log foodpoints = "..log10(foodpoints))
   points=flr(foodpoints*log10(foodpoints*(comboNum+1)))
@@ -1007,7 +981,6 @@ end
 function checkHighScoreInit()
   scene=5
   slot=get_high_score_slot(curLevel, score)
-  -- slot=1
   if score>0 and slot>0 then
     scene=5
     textBam={
@@ -1019,7 +992,6 @@ function checkHighScoreInit()
         {str='    a',     d=12, scale=3, sfx=14},
         {str='   high',   d=12, scale=3, sfx=14},
         {str='score!', d=12, scale=5, sfx=15}
-        -- {str='score!', d=1, scale=5}
       }
     }
     sfx(textBam.text[1].sfx)
@@ -1158,16 +1130,10 @@ end
 function hseDraw()
   cls(0)
 
-  -- rectfill(hse.x, hse.y, hse.w, hse.h, 7)
   for i=1,hse.slots do
-    -- rectfill(hse.x,hse.y,hse.x + 6,hse.y + 10,9)
-
     w=8
 
     -- Slot selection border
-    -- todo: if i want animation for the box or buttons this wont work
-    -- instead ill read the current slot & interpolate the box position or something
-    -- maybe i could just make a little bump animation & that's good enough?
     if i==hse.curSlot then
       x=((i-1)*w)
       rect(
@@ -1283,8 +1249,6 @@ function gameoverupdate()
       -- o
       sfx(7)
       togameinit()
-      -- sfx(7)
-      -- gameinit()
     end
   end
 end
@@ -1312,7 +1276,6 @@ function highscoredraw()
       y1+=3*sin(timer/140)+1
 
       rectfill(x1,y1, x1+w,y1+w, c)
-      -- rect(x1,y1, x1+w,y1+w, 2)
     end
   end
 
@@ -1640,7 +1603,6 @@ end
 function comictext(s,x,y)
 	w=4
 	c=15
-	-- rectfill(x-1,y-1, x+(#s*w)-1, y+5, c)
 	for i=1,#s do
 		--u
 		print(s[i], x+(i-1)*w, y-1, c)
@@ -1650,15 +1612,6 @@ function comictext(s,x,y)
 		print(s[i], x+(i-1)*w-1, y, c)
 		--r
 		print(s[i], x+(i-1)*w+1, y, c)
-
-		--ul
-		-- print(s[i], x+(i-1)*w-1, y-1, c)
-		-- --ur
-		-- print(s[i], x+(i-1)*w+1, y-1, c)
-		-- --dl
-		-- print(s[i], x+(i-1)*w-1, y+1, c)
-		-- --dr
-		-- print(s[i], x+(i-1)*w+1, y+1, c)
 
 		--c
 		print(s[i], x+(i-1)*w, y, 0)
