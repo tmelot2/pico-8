@@ -22,7 +22,7 @@ function _draw()
 
 	rectfill(5,5,60,25,2)
 	comictext('comic text', 8, 12)
-	scale_text('scaled', 8, 30, 8, scale)
+	scale_text2('scaled', 8, 30, 8, scale)
 
 	-- spr(1,0,1,1,1)
 end
@@ -87,6 +87,28 @@ function scale_text(str,x,y,c,scale)
     -- Copy 512b from User data start to Gfx start
     memcpy(0x0,0x4300,0x0200)
 end
+
+-- Mine, same as above but doesn't copy memory around
+-- Uses high memory as buffer
+function scale_text2(str,x,y,c,scale)
+	BASE=0xE0
+	GFX=0x00
+	SCREEN=0x60
+
+	-- Print text into buffer
+	-- 1. remap screen to user, print to screen, put screen back
+	poke(0x5F55, BASE)
+	print("test",0,0,c)
+	poke(0x5F55, SCREEN)
+
+	-- 2. remap gfx to user, sspr to screen, put gfx back
+	poke(0x5F54, BASE)
+	w=#str*4
+	h=5
+	sspr(0,0,w,h,x,y,w*scale,h*scale)
+	poke(0x5F54, GFX)
+end
+
 
 
 -- input

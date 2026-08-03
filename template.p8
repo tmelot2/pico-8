@@ -5,20 +5,31 @@ __lua__
 screenwidth = 127
 screenheight = 127
 
+button=0
+
 -- main
 function _init()
 end
 
 function _update60()	
+	input()
 end
 
 function _draw()
 	cls(0)
+	print(button, 12, 12)
 end
 
 
 -- input
 function input()
+	if btn(0) then button='left' end -- l
+	if btn(1) then button='right' end -- r
+	if btn(2) then button='up' end -- u
+	if btn(3) then button='down' end -- d
+	if btn(4) then button='o' end -- o
+	if btn(5) then button='x' end -- x
+	if btn() == 0 then button='' end -- d
 end
 
 
