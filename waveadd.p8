@@ -8,20 +8,37 @@ screenheight = 127
 button=0
 t=0
 
-wc=4
+wc=3
 waves={}
 sumwave={}
+
+show_waves=false
 
 -- main
 function _init()
 	p={8,9,10,11,12}
+
+	waves = {}
+
+	base_freq = 1/128
+	base_amp = 1.5
+	freq = base_freq
+	amp = base_amp
+
+	-- for i=1,rnd(3)+3 do
 	for i=1,wc do
+		speed = rndrange(-0.02, 0.02)
+		phase = rnd() * 2
+		-- if freq > 0.08 then freq = 1 end
 		add(waves, {
-			freq=1 + rnd(2),
-			phase=rnd(i+5),
-			amp=0.5+rnd(0.5),
-			c=p[i%5+1]
+			freq = freq,
+			speed = speed,
+			phase = phase,
+			amp = amp,
+			c = 5
 		})
+		freq *= 2.0
+		amp *= 0.4
 	end
 end
 
@@ -32,7 +49,7 @@ end
 
 function _draw()
 	cls(0)
-	scale=8
+	scale=4
 	tv=0
 
 	-- Reset sumwave for this frame
@@ -46,28 +63,42 @@ function _draw()
 		w = waves[i]
 		-- print('f'..w.freq..' p'..w.phase..' a'..w.amp, 2, 6*i, w.c)
 		for x=1,127 do
-			v = w.amp * sin((w.freq*x+t)/60)
+			v = w.amp * sin(w.freq*x + w.speed*t + w.phase)
 			sumwave[x] += v
-			-- pset(x, 75 - (v * scale), w.c)
+			if show_waves then
+				pset(x, 55 - (v * scale), w.c)
+			end
 		end
+		print(w.freq)
 	end
 
 	-- Sum wave
 	for x=0,127 do
-		pset(x, 75 - scale*sumwave[x], 12)
+		-- pset(x, 75 - scale*sumwave[x], 12)
+		line(x, 75 - scale*sumwave[x], x, 128, 12)
+		pset(x, 75 - scale*sumwave[x] -1, 13)
+		pset(x, 75 - scale*sumwave[x] -2, 7)
+		-- pset(x, 75 - scale*sumwave[x] +0, 1)
 	end
+
+	print(#waves..' waves')
 end
 
 
 -- input
 function input()
-	if btn(0) then button='left' end -- l
-	if btn(1) then button='right' end -- r
+	if btnp(0) then wc-=1 _init() end -- l
+	if btnp(1) then wc+=1 _init() end -- r
 	if btn(2) then button='up' end -- u
 	if btn(3) then button='down' end -- d
-	if btn(4) then button='o' end -- o
-	if btn(5) then button='x' end -- x
+	if btnp(4) then _init() end -- o
+	if btnp(5) then show_waves = not show_waves end -- x
 	if btn() == 0 then button='' end -- d
+end
+
+
+function rndrange(min, max)
+	return min + rnd(max-min)
 end
 
 
