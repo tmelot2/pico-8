@@ -21,7 +21,7 @@ function _init()
 	waves = {}
 
 	base_freq = 1/128
-	base_amp = 1.5
+	base_amp = 2.0
 	freq = base_freq
 	amp = base_amp
 
@@ -51,10 +51,11 @@ function _draw()
 	cls(0)
 	scale=4
 	tv=0
+	edge_damp_dist=12
 
 	-- Reset sumwave for this frame
     sumwave = {}
-    for x = 0, 127 do
+    for x = 0, screenwidth do
         sumwave[x] = 0
     end
 
@@ -62,7 +63,7 @@ function _draw()
 	for i=1,#waves do
 		w = waves[i]
 		-- print('f'..w.freq..' p'..w.phase..' a'..w.amp, 2, 6*i, w.c)
-		for x=1,127 do
+		for x=0,screenwidth do
 			v = w.amp * sin(w.freq*x + w.speed*t + w.phase)
 			sumwave[x] += v
 			if show_waves then
@@ -74,11 +75,17 @@ function _draw()
 
 	-- Sum wave
 	for x=0,127 do
-		-- pset(x, 75 - scale*sumwave[x], 12)
-		line(x, 75 - scale*sumwave[x], x, 128, 12)
-		pset(x, 75 - scale*sumwave[x] -1, 13)
-		pset(x, 75 - scale*sumwave[x] -2, 7)
-		-- pset(x, 75 - scale*sumwave[x] +0, 1)
+		if x <= edge_damp_dist then
+			edge_damp = x / edge_damp_dist
+		elseif screenwidth-x <= edge_damp_dist then
+			edge_damp = (screenwidth - x) / edge_damp_dist
+		else
+			edge_damp = 1
+		end
+		edge_damp = edge_damp * edge_damp * (3 - 2 * edge_damp)
+		line(x, 75 - edge_damp*scale*sumwave[x], x, 128, 12)
+		pset(x, 75 - edge_damp*scale*sumwave[x] -1, 13)
+		pset(x, 75 - edge_damp*scale*sumwave[x] -2, 7)
 	end
 
 	print(#waves..' waves')
