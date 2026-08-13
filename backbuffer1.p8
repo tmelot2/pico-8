@@ -25,6 +25,7 @@ function _update60()
 	t+=1
 end
 
+-- I suppose we could poke to map screen to user (back buffer) instead of manual addr calc
 function update_back_buffer()
 	ROW_BYTES=64
 	DRIP_CLEAR_RATE=0.4 -- chance drip will clear
