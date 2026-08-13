@@ -30,6 +30,11 @@ function update_back_buffer()
 	DRIP_CLEAR_RATE=0.4 -- chance drip will clear
 	DRIP_DARKEN_RATE=0.25 -- chance drip will darken
 
+	-- Constant drippy, and tests drawing API after a remap
+	poke(0x5F55, BACK>>8)
+	line(px+4,py+4,px+11,py+4,rnd()*5)
+	poke(0x5F55, SCREEN>>8)
+
 	for i=1,160 do
 		bx=rnd()*ROW_BYTES -- 0..63 (2 pixels per byte)
 		by=rnd()*sh        -- 0..127

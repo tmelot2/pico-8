@@ -21,13 +21,14 @@ function _init()
 	waves = {}
 
 	base_freq = 1/128
-	base_amp = 2.0
+	base_amp = 1.6
 	freq = base_freq
 	amp = base_amp
 
 	-- for i=1,rnd(3)+3 do
 	for i=1,wc do
 		speed = rndrange(-0.02, 0.02)
+		if abs(speed) < 0.005 then speed = rndrange(-0.02, 0.02) end
 		phase = rnd() * 2
 		-- if freq > 0.08 then freq = 1 end
 		add(waves, {
