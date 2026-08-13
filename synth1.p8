@@ -11,27 +11,53 @@ __lua__
 screenwidth = 128
 screenheight = 128
 
--- board
-bx=0 by=0
-bw=5 bh=5 -- inner, ignoring border
-
+bw=5 bh=5
+board={}
 button=0
+t=0
+
+-- board
+function new_board(x,y,w,h)
+	local b={
+		x=x, y=y, -- draw coords
+		w=w, h=h  -- game board dimensions in tiles
+	}
+	b.pad=3
+	b.width_px=8*w
+	b.height_px=8*h
+
+	return b
+end
+
+function draw_board(b)
+	tw=8 th=8
+	for i=0, b.w-1 do
+		for j=0, b.h-1 do
+			-- spr((j+i)%4+1, b.x+tw*i, b.y+th*j)
+			spr((j+i)%4+1, b.x+tw*i, b.y+th*j+25*sin(2*(t+i+j)/120))
+		end
+	end
+	-- rect(b.x, b.y, b.x+b.width_px-1, b.y+b.height_px-1, 7)
+end
 
 -- main
 function _init()
+	board = new_board(0,0,5,5)
 end
 
 function _update60()
 	input()
+	t+=1
 end
 
 function _draw()
 	cls(0)
-	print(button, 12, 12)
-	drawborder()
-	drawboard()
-	print(bw..','..bh,0,112,8)
+	-- print(button, 12, 12)
+	-- drawborder()
+	-- drawboard()
+	draw_board(board)
 
+	print(board.w..','..board.h,0,112,8)
 end
 
 function drawborder()
@@ -51,22 +77,25 @@ function drawborder()
 	end
 end
 
-function drawboard()
-	tw=8 th=8
-	for i=1,bw do
-		for j=1,bh do
-			spr(1,bx+tw*i,by+th*j)
-		end
-	end
-end
-
 
 -- input
 function input()
-	if btnp(0) then bw-=1 end -- l
-	if btnp(1) then bw+=1 end -- r
-	if btnp(2) then bh-=1 end -- u
-	if btnp(3) then bh+=1 end -- d
+	if btnp(0) then -- l
+		bw-=1
+		board=new_board(0,0,bw,bh)
+	end
+	if btnp(1) then -- r
+		bw+=1
+		board=new_board(0,0,bw,bh)
+	end
+	if btnp(2) then -- u
+		bh-=1
+		board=new_board(0,0,bw,bh)
+	end
+	if btnp(3) then -- d
+		bh+=1
+		board=new_board(0,0,bw,bh)
+	end
 	if btn(4) then button='o' end -- o
 	if btn(5) then button='x' end -- x
 	if btn() == 0 then button='' end -- d
